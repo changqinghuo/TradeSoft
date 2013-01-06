@@ -35,38 +35,54 @@ class SketchWindow(wx.Window):
         dc.SelectObject(self.Buffer)
         dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
         dc.Clear()
+        self.__stockList = []
+        for i in range(10):
+            stock = StockRealtime("")
+            stock.open = 300
+            stock.close = 320
+            stock.high = 390
+            stock.low = 290
+            self.__stockList.append(stock)
        
         
-        self.Drawcircle(dc)
+        self.DrawCandleLineList(dc, self.__stockList)
         dc.SelectObject(wx.NullBitmap)
         return True
 
 #    def __getStockDataListRange(self, stockdataList):
 #        return (30, 50)
     
-    def DrawCandleLineList(self, stockdataList):        
+    def DrawCandleLineList(self, dc, stockdataList):        
          size=self.GetClientSize()
          windowWidth = size.width
          windowHeight = size.height
          candleWith = windowWidth/len(stockdataList)
-         stockRange = (30, 50)
+         stockRange = (300., 500.)
          recwidth = windowWidth/len(stockdataList)
-              
+         recs = []
+         lines = []     
          for i in range(len(stockdataList)):
              stock = stockdataList[i]
-             recheight = windowHeight*abs(stock.close - stock.open)/stockRange
+             pricediff = stockRange[1] - stockRange(0)
+             recheight = windowHeight*abs(stock.close - stock.open)/pricediff
              x = i*recwidth
              if stock.close > stock.open:
-                 y = windowHeight*stock.close/stockRange                 
+                 y = windowHeight*stock.close/pricediff                 
                  upperlineendY = y - (stock.high - stock.close) 
                  lowerlineendY = y + (stock.open - stock.low)
              else:
-                 y = windowHeight*stock.open/stockRange
+                 y = windowHeight*stock.open/pricediff
                  upperlineendY = y - (stock.high - stock.open) 
                  lowerlineendY = y + (stock.close - stock.low)
-         upperline = (x+candleWith/2, y, x+candleWith/2, upperlineendY)
-         lowerline = (x+candleWith/2, y-recheight, x+candleWith/2, y-recheight + upperlineendY)
+             rec = (x, y, recwidth, recheight)
+             upperline = (x+candleWith/2, y, x+candleWith/2, upperlineendY)
+             lowerline = (x+candleWith/2, y-recheight, x+candleWith/2, y-recheight + upperlineendY)
+             recs.append(rec)
+             lines.append(upperline)
+             lines.append(lowerline)
             
+         dc.DrawRectangleList(recs)
+         dc.DrawLineList(lines) 
                  
              
              
@@ -106,7 +122,9 @@ class SketchWindow(wx.Window):
 
         dc = wx.PaintDC(self)
         dc.DrawBitmap(self.Buffer, 0, 0)
-        self.Drawcircle(dc)
+        
+        
+        self.DrawCandleLineList(dc, self.__stockList)
 
 if __name__=='__main__':
     app=wx.PySimpleApp()
