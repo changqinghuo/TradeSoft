@@ -20,9 +20,19 @@ class SketchWindow(wx.Window):
 
         wx.Window.__init__(self, parent, ID)
         self.Buffer = None
+        
+        
 
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBack)
+        self.Bind(wx.EVT_LEFT_DOWN, self.OnClick)
+
+        
+        
+    
+    def OnClick(self, event):
+        print event.GetPosition()
+        
 
     def InitBuffer(self):
         size=self.GetClientSize()
@@ -32,16 +42,17 @@ class SketchWindow(wx.Window):
         
         self.Buffer=wx.EmptyBitmap(size.width,size.height)
         dc=wx.MemoryDC()
+        #dc = wx.ClientDC()
         dc.SelectObject(self.Buffer)
         dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
         dc.Clear()
         self.__stockList = []
-        for i in range(10):
+        for i in range(100):
             stock = StockRealtime("")
-            stock.open = 300
-            stock.close = 320
-            stock.high = 390
-            stock.low = 290
+            stock.open = random.uniform(1.,100.)
+            stock.close = random.uniform(1.,100.)
+            stock.high = max(stock.open, stock.close) + random.uniform(1.,10.)
+            stock.low = min(stock.open, stock.close)- random.uniform(1.,10.)
             self.__stockList.append(stock)
        
         
@@ -49,68 +60,48 @@ class SketchWindow(wx.Window):
         dc.SelectObject(wx.NullBitmap)
         return True
 
-#    def __getStockDataListRange(self, stockdataList):
-#        return (30, 50)
+    def __getStockDataListRange(self, stockdataList):
+        highlist = [s.high for s in stockdataList]
+        lowlist = [s.low for s in stockdataList]
+        return (max(highlist), min(lowlist))
     
-    def DrawCandleLineList(self, dc, stockdataList):        
-         size=self.GetClientSize()
-         windowWidth = size.width
-         windowHeight = size.height
-         candleWith = windowWidth/len(stockdataList)
-         stockRange = (300., 500.)
-         recwidth = windowWidth/len(stockdataList)
-         recs = []
-         lines = []     
-         for i in range(len(stockdataList)):
-             stock = stockdataList[i]
-             pricediff = stockRange[1] - stockRange(0)
-             recheight = windowHeight*abs(stock.close - stock.open)/pricediff
-             x = i*recwidth
-             if stock.close > stock.open:
-                 y = windowHeight*stock.close/pricediff                 
-                 upperlineendY = y - (stock.high - stock.close) 
-                 lowerlineendY = y + (stock.open - stock.low)
-             else:
-                 y = windowHeight*stock.open/pricediff
-                 upperlineendY = y - (stock.high - stock.open) 
-                 lowerlineendY = y + (stock.close - stock.low)
-             rec = (x, y, recwidth, recheight)
-             upperline = (x+candleWith/2, y, x+candleWith/2, upperlineendY)
-             lowerline = (x+candleWith/2, y-recheight, x+candleWith/2, y-recheight + upperlineendY)
-             recs.append(rec)
-             lines.append(upperline)
-             lines.append(lowerline)
+    def DrawCandleLineList(self, dc, stockdataList):
+                                
+        size=self.GetClientSize()         
+        windowWidth = size.width-10
+        windowHeight = size.height-10
+        dc.SetDeviceOrigin(0, windowHeight)
+        dc.SetAxisOrientation(True, True)
+
+        stockRange = self.__getStockDataListRange(stockdataList)
+        recwidth = windowWidth/len(stockdataList)-2  
+        for i in range(len(stockdataList)):
+            stock = stockdataList[i]
+            pricediff = stockRange[1] - stockRange[0]
+            recheight = windowHeight*abs(stock.close - stock.open)/pricediff
+            x = i*windowWidth/len(stockdataList)
+            upperlineendY = (stock.high - stockRange[0])*windowHeight/pricediff                 
+            lowerlineendY = (stock.low - stockRange[0])*windowHeight/pricediff
+            drop = False
+            if stock.close >= stock.open:                 
+                y = upperlineendY - (stock.high - stock.open)*windowHeight/pricediff       
+            else:                
+                drop = True             
+                y = upperlineendY - (stock.high - stock.close)*windowHeight/pricediff  
+                   
+            rec = (x, y, recwidth, recheight)
+            upperline = (x+recwidth/2, y+recheight, x+recwidth/2, upperlineendY)
+            lowerline = (x+recwidth/2, y, x+recwidth/2, lowerlineendY)
+           
+            if drop:
+                dc.SetBrush(wx.BLACK_BRUSH)
+            else:                
+                dc.SetBrush(wx.WHITE_BRUSH)
+            dc.DrawRectangle(rec[0], rec[1], rec[2], rec[3])
+            dc.DrawLine(upperline[0], upperline[1], upperline[2], upperline[3])
+            dc.DrawLine(lowerline[0], lowerline[1], lowerline[2], lowerline[3])
             
-         dc.DrawRectangleList(recs)
-         dc.DrawLineList(lines) 
-                 
-             
-             
-         
-         
-         
-        
-        
-        
-    def DrawCandleLine(self, dc, rec, upperLine, lowerLine):
-        stock = StockRealtime("")
-        stock.open = 300
-        stock.close = 320
-        stock.high = 390
-        stock.low = 290
-        size=self.GetClientSize()
-        W = size.width
-        H = size.height
-        pen=wx.Pen('blue',1)
-        dc.SetPen(pen)
-        rects = []
-        rec = (W/2, H/2, 10, abs(stock.close-stock.open))
-        rects.append(rec)
-        upperLine = (rec[0]+rec[2]/2, rec[1], rec[0]+rec[2]/2, rec[1]-(stock.high-stock.close))
-        lowerLine = (rec[0]+rec[2]/2, rec[1]+rec[3], rec[0]+rec[2]/2, rec[1]+rec[3]+(stock.close - stock.low))
-        lines = [upperLine, lowerLine]
-        dc.DrawRectangleList(rects)
-        dc.DrawLineList(lines)
+
 
     def OnEraseBack(self, event):
         pass # do nothing to avoid flicker
