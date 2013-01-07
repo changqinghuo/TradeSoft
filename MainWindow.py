@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import wx
-
+from AnalysisPanel import AnalysisPanel
 #import ScrolledWindow
 
 #----------------------------------------------------------------------
@@ -130,6 +130,7 @@ class MyParentFrame(wx.MDIParentFrame):
     def OnNewWindow(self, evt):
         self.winCount = self.winCount + 1
         win = wx.MDIChildFrame(self, -1, "Child Window: %d" % self.winCount)
+        panel = AnalysisPanel(win)
         #canvas = ScrolledWindow.MyCanvas(win)
         win.Show(True)
 
