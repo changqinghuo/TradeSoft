@@ -1,6 +1,6 @@
 import wx
 import random
-from sina_parse_realtime import StockRealtime
+from sina_parse_realtime import StockData
 
 class CandleData():
     def __init__(self):
@@ -48,7 +48,7 @@ class SketchWindow(wx.Window):
         dc.Clear()
         self.__stockList = []
         for i in range(100):
-            stock = StockRealtime("")
+            stock = StockData("")
             stock.open = random.uniform(1.,100.)
             stock.close = random.uniform(1.,100.)
             stock.high = max(stock.open, stock.close) + random.uniform(1.,10.)

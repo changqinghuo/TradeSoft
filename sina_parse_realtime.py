@@ -4,7 +4,7 @@ import urllib2
 import re
 import datetime
 import time
-class StockRealtime:
+class StockData:
     def __init__(self, data=""):
         self.stockId = ""
         self.stockName = ""
@@ -20,55 +20,41 @@ class StockRealtime:
         self.tradeVolume = 0
         self.tradeMoney = 0
         self.datetime = 0
-        self.type = 'r'
-             
+        self.type = 'r'             
         if data != "":
             self.parseData(data)
     def parseData(self, data):
-        values = data.split(',')
-        idname = values[0]
-        index = idname.index('=')
-        self.stockId = idname[index-8: index]
-        self.stockName = idname[index+2:]
-        self.open = float(values[1])
-        self.lastClose = float(values[2])
-        self.currentPrice = float(values[3])
-        self.high = float(values[4])
-        self.low = float(values[5])
-        self.buy = float(values[6])
-        self.sell = float(values[7])
-        self.tradeVolume = int(values[8])
-        self.tradeMoney = float(values[9])
-        for i in range(10, 20, 2):
-            self.buyList.append((float(values[i]), float(values[i+1])))
-        for i in range(20, 29, 2):
-            self.sellList.append((float(values[i]), float(values[i+1])))
-        line = values[30] + " " + values[31]
-        rep = re.compile(r'(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):(\d{2})')
-        m = rep.match(line)
-        self.datetime = datetime.datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)),\
-                                          int(m.group(4)), int(m.group(5)), int(m.group(6)))
-        
+        try:            
+            values = data.split(',')
+            idname = values[0]
+            index = idname.index('=')
+            self.stockId = idname[index-8: index]
+            self.stockName = idname[index+2:]
+            self.open = float(values[1])
+            self.lastClose = float(values[2])
+            self.currentPrice = float(values[3])
+            self.high = float(values[4])
+            self.low = float(values[5])
+            self.buy = float(values[6])
+            self.sell = float(values[7])
+            self.tradeVolume = int(values[8])
+            self.tradeMoney = float(values[9])
+            for i in range(10, 20, 2):
+                self.buyList.append((float(values[i]), float(values[i+1])))
+            for i in range(20, 29, 2):
+                self.sellList.append((float(values[i]), float(values[i+1])))
+            line = values[30] + " " + values[31]
+            rep = re.compile(r'(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):(\d{2})')
+            m = rep.match(line)
+            self.datetime = datetime.datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)),\
+                                              int(m.group(4)), int(m.group(5)), int(m.group(6)))
+        except:
+            pass
 
         
         
 
-def sina_parse(data):
-    rval = {}
-    values = data.split(',')
-    idname = values[0]
-    index = idname.index('=')
-    stockid = idname[index-8: index]
-    stockname = idname[index+2:]
-    rval["stockid"] = stockid
-    rval["stockname"] = stockname
-    rval["open"] = float(values[1])
-    rval["lastclose"] = float(values[2])
-    rval["currentprice"] = float(values[3])
-    rval["highest"] = float(values[4])
-    return rval
-        
-    
+
     
     
     
@@ -82,19 +68,19 @@ def main():
     datafile = open("realdata.txt", 'a')
     count = 0
     with open("realdata.txt", 'a') as datafile:
-        a = StockRealtime(data)
+        a = StockData(data)
         endtime = datetime.datetime(2013, 1, 4, 15, 01)
         oldtime = datetime.datetime.now()
+        a = StockData(data)
         while a.datetime < endtime:
             try:
                 data = urllib2.urlopen(url,timeout=1).read().decode('gbk')
-                print data
-                a = StockRealtime(data)
-                if oldtime != a.datetime:
+                a.ParseData(data)
+                if oldtime <= a.datetime:
                     datafile.write(data)
                     oldtime = a.datetime               
              
-                time.sleep(0.1)
+                time.sleep(1)
                 
             except:
                 pass
