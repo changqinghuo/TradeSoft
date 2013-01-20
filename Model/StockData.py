@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/python
+import pandas
 import urllib2
 import re
 import datetime
 import time
+
 class StockData:
     def __init__(self, stockid):
         self.stockId = stockid
@@ -21,8 +23,7 @@ class StockData:
         self.tradeMoney = 0
         self.datetime = 0
         self.type = 'r'
-        self.__storeData = {}
-        self.__storeData5Min = {}
+        self.__storeData = pandas.Series()        
         self.url = "http://hq.sinajs.cn/list="+self.stockId            
         
     def parseData(self, data):
@@ -57,16 +58,16 @@ class StockData:
     def getRealData(self):
         pass
     def get5MinData(self):
-        if len(self.__storeData5Min) is 0:
-            listhigh = []
-            listlow = []
-            for data in self.__storeData:
-                if data[0].time.min%5 == 0:
-                    listhigh = []
-                    listlow = []
-                    open = data[1].open                                    
-                listhigh.append(data[1].high)
-                listlow.append(data[1].low)
+        listdata = []
+        df = self.__storeData.resample('5Min', 'ohlc',  fill_method='pad')
+        for val in df.values:
+            a = StockData(self.stockId)
+            a.open = val[0]
+            a.high = val[1]
+            a.close =val[2]
+            a.low = val[3]
+            listdata.append(a)
+        return listdata
                 
             
         pass
@@ -77,12 +78,13 @@ class StockData:
     def getRealtimeData(self):
         pass
     def getDataFromSina(self):
-        with open("realdata.txt", 'r') as datafile:
+        with open("model/realdata.txt", 'r') as datafile:
+            val = {}
             for line in datafile:
                 a = StockData(self.stockId)
                 if a.parseData(line):
-                    self.__storeData[a.datetime] =  a
-        self.__storeData = sorted(self.__storeData.items())
+                    val[a.datetime] = a.currentPrice
+        self.__storeData = pandas.Series(val)
        
             
 #            with open("realdata.txt", 'a') as datafile:
@@ -110,7 +112,10 @@ class StockData5Min(StockData):
         StockData.__init__(self, stockid)
         self.__storeData = {}
     
-a = StockData('sz002094')
-a.getDataFromSina()
+#a = StockData('sz002094')
+#a.getDataFromSina()
+#list = a.get5MinData()
+#for a in list:
+#    print a.open
         
         
