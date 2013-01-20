@@ -18,6 +18,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import urllib2,time,datetime
+import pandas as pd
 
 class Quote(object):
   
@@ -27,7 +28,7 @@ class Quote(object):
   def __init__(self):
     self.symbol = ''
     self.datetime ,self.open,self.high,self.low,self.close,self.volume = ([] for _ in range(6))
-
+    self.df = None
   def append(self,dt,open,high,low,close,volume):
     self.datetime.append(dt)
     self.open.append(float(open))
@@ -64,6 +65,7 @@ class GoogleIntradayQuote(Quote):
   def __init__(self,symbol,interval_seconds=300,num_days=5):
     super(GoogleIntradayQuote,self).__init__()
     self.symbol = symbol.upper()
+    dict = {}
     url_string = "http://www.google.com/finance/getprices?q={0}".format(self.symbol)
     url_string += "&i={0}&p={1}d&f=d,o,h,l,c,v".format(interval_seconds,num_days)
     csv = urllib2.urlopen(url_string, timeout=1).readlines()
@@ -77,11 +79,15 @@ class GoogleIntradayQuote(Quote):
         offset = float(offset)
       open_,high,low,close = [float(x) for x in [open_,high,low,close]]
       dt = datetime.datetime.fromtimestamp(day+(interval_seconds*offset))
-      self.append(dt,open_,high,low,close,volume)
+      self.append(dt, open_, high, low, close, volume)
+      
+    dict = {'open':self.open, 'high':self.high, 
+            'low':self.low, 'close':self.close, 'volume':self.volume}
+    self.df = pd.DataFrame(dict, index=self.datetime)
    
    
 if __name__ == '__main__':
   q = GoogleIntradayQuote('002094',300, 30)
   q.write_csv("test.csv")
   q.read_csv("test.csv")
-  print q.datetime[0], q.close[0]                                           # print it out
+  print q.df['close']                                    # print it out

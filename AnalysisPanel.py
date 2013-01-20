@@ -6,6 +6,7 @@ import wx
 from Model.StockData import *
 from Model.DataManager import *
 import random
+from util.draw import *
 # begin wxGlade: extracode
 # end wxGlade
 
@@ -24,8 +25,9 @@ class AnalysisPanel(wx.Panel):
        
         self.__stockList = []
         quote = '002094'
-        dm = DataManager()
+        dm = DataManager()        
         q = dm.GetQuoteData(quote, 1800, 30)
+        self.df = q.df
         for bar in xrange(len(q.close)):
             a = StockData(quote)
             a.open = q.open[bar]
@@ -66,7 +68,8 @@ class AnalysisPanel(wx.Panel):
         dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
         dc.Clear()    
         
-        self.DrawCandleLineList(dc, self.__stockList)
+        #self.DrawCandleLineList(dc, self.__stockList)
+        draw_candle(dc, self.df)
         dc.SelectObject(wx.NullBitmap)
         return True
 
@@ -124,8 +127,8 @@ class AnalysisPanel(wx.Panel):
         dc = wx.PaintDC(self)
         dc.DrawBitmap(self.Buffer, 0, 0)
         
-        
-        self.DrawCandleLineList(dc, self.__stockList)
+        draw_candle(dc, self.df)
+        #self.DrawCandleLineList(dc, self.__stockList)
         
 
 # end of class AnalysisPanel
