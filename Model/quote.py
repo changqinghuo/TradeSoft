@@ -20,6 +20,7 @@
 import urllib2,time,datetime
 import pandas as pd
 
+
 class Quote(object):
   
   DATE_FMT = '%Y-%m-%d'

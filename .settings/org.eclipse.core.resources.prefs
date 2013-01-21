@@ -1,6 +1,7 @@
-#Wed Jan 09 22:01:37 CST 2013
+#Mon Jan 21 16:15:10 CST 2013
 eclipse.preferences.version=1
-encoding//Model/StockData.py=utf-8
+encoding//model/StockData.py=utf-8
+encoding//view/AnalysisPanel.py=iso-8859-15
 encoding/AnalysisPanel.py=iso-8859-15
 encoding/MainWindow.py=iso-8859-15
 encoding/sina_parse_realtime.py=utf-8
