@@ -11,7 +11,7 @@ def draw_candle(dc, df):
     """
     size=dc.GetSize()         
     windowWidth = size.width-50
-    windowHeight = size.height-10
+    windowHeight = size.height-100
     dc.SetDeviceOrigin(0, windowHeight)
     dc.SetAxisOrientation(True, True)    
     
