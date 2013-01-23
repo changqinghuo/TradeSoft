@@ -8,6 +8,8 @@ def dfrange(df):
 def draw_candle(dc, df):
     """ dc: device context
         df: pandas.dataframe
+                   open high low close volume
+        datetime   xx   xx   xx   xx    xx
     """
     size=dc.GetSize()         
     windowWidth = size.width-50
