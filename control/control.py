@@ -48,8 +48,9 @@ class Control:
         #self.timer.Start(5000)        
         #canvas = ScrolledWindow.MyCanvas(win)
         win.Show(True)
-        t = threading.Thread(target=self.model.QuoteDataThreads())
-        t.start()
+        #t = threading.Thread(target=self.model.QuoteDataThreads())
+        #t.start()
+        self.model.start()
 
         
         

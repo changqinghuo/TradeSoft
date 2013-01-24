@@ -28,9 +28,10 @@ class QuoteDataThread(threading.Thread):
             except:
                 done = False
 
-class DataManager(object):
+class DataManager(threading.Thread):
     """Singleton datamanager"""
     def __init__(self):
+        threading.Thread.__init__(self)
         self.quotedata = None
         self.symbol_quote_dict = {"002094":None, '000001':None} 
         
@@ -66,7 +67,9 @@ class DataManager(object):
                     pub.sendMessage(t.symbol+"ANALYSISDATA", t.quotedata.df)
                        
         
-            
+    def run(self):
+        self.QuoteDataThreads()
+                
         
         
         
