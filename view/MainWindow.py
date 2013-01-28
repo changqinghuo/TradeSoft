@@ -11,7 +11,8 @@ from control.control import *
 # IDs be in a specific range. There are better ways to do that, too, but
 # this will do for purposes of this demo.
 
-ID_Menu_New         = 5004
+ID_Menu_Aanalysis   = 5004
+ID_Menu_Realtime    = 5006
 ID_Menu_Exit        = 5005
 
 ID_WINDOW_TOP       = 5000
@@ -30,7 +31,9 @@ class MyParentFrame(wx.MDIParentFrame):
         
         self.winCount = 0
         menu = wx.Menu()
-        menu.Append(ID_Menu_New, "&New Window")
+        menu.Append(ID_Menu_Aanalysis, "&Analysis Window")
+        menu.AppendSeparator()
+        menu.Append(ID_Menu_Realtime, "&Realtime Window")
         menu.AppendSeparator()
         menu.Append(ID_Menu_Exit, "E&xit")
 

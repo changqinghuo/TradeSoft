@@ -8,49 +8,75 @@ import threading
 
 class Control:
     def __init__(self, app):        
-        self.model = DataManager() 
+        
         self.mainwindow = MyParentFrame()           
-        self.mainwindow.Bind(wx.EVT_MENU, self.OnNewAnalysisWindow, id=ID_Menu_New)
-        
-        
-        
+        self.mainwindow.Bind(wx.EVT_MENU, self.OnNewAnalysisWindow, id=ID_Menu_Aanalysis)
+        self.mainwindow.Bind(wx.EVT_MENU, self.OnNewRealtimeWindow, id=ID_Menu_Realtime)
+        self.mainwindow.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)       
         
         self.mainwindow.Show(True)
         app.SetTopWindow(self.mainwindow)
-        self.analysis_data = self.model.GetQuoteData('002094', 60, 1).df
         
-        for d in self.model.symbol_quote_dict.keys():            
-            pub.subscribe(self.AnalysisDataArrive, d+"ANALYSISDATA")
+        self.analysis_window = wx.MDIChildFrame(self.mainwindow, -1, "Analysis Window")
+        self.analysis_panel = AnalysisPanel(self.analysis_window)
+        self.analysis_panel.Bind(wx.EVT_PAINT, self.OnAnalysisPaint)
+        self.analysis_panel.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBack)
+        self.analysis_window.Show(False)
         
+        self.realtime_window = wx.MDIChildFrame(self.mainwindow, -1, "Realtime Window")
+        self.realtime_panel = AnalysisPanel(self.realtime_window)
+        self.realtime_panel.Bind(wx.EVT_PAINT, self.OnRealtimePaint)
+        self.realtime_panel.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBack)
+        self.realtime_window.Show(False)
+        
+        self.data_manager = DataManager() 
+        self.data_manager.start()
+        self.symbol = '002094'
+        self.realtime_data = self.data_manager.GetQuoteData(self.symbol, 60, 1).df
+        self.analysis_data = self.data_manager.GetQuoteData(self.symbol, 1800, 30).df 
+        #for d in self.data_manager.symbol_quote_dict.keys():            
+        pub.subscribe(self.AnalysisDataArrive, "ANALYSISDATA")
+        pub.subscribe(self.RealtimeDataArrive, "REALTIMEDATA")
+        
+
+
+    def OnKeyDown(self, evt):
+        keycode = evt.GetKeyCode()
+        print keycode
 
 
     def OnAnalysisPaint(self, evt):
        dc = wx.PaintDC(self.analysis_panel)
        #dc.DrawBitmap(self.Buffer, 0, 0) 
        dc.Clear()     
-       draw_realtime(dc, self.analysis_data, 8.21)
+       draw_candle(dc, self.analysis_data)
                 
 
     def OnEraseBack(self, evt):        
         pass
-    def AnalysisDataArrive(self, message):        
-        self.analysis_data = message.data
-        self.analysis_panel.Refresh()
-    def OnTimer(self, evt):
-        self.model.GetQuoteData('002094', 300, 5)
+    def AnalysisDataArrive(self, message):
+        if self.analysis_window.IsShownOnScreen():           
+            self.analysis_data = message.data
+            self.analysis_panel.Refresh()  
     def OnNewAnalysisWindow(self, evt):
-        win = wx.MDIChildFrame(self.mainwindow, -1, "Child Window: %d" % 1)
-        self.timer = wx.Timer(win)
-        #win.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
-        self.analysis_panel = AnalysisPanel(win)
-        self.analysis_panel.Bind(wx.EVT_PAINT, self.OnAnalysisPaint)
-        self.analysis_panel.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBack)
-        #self.timer.Start(5000)        
-        #canvas = ScrolledWindow.MyCanvas(win)
-        win.Show(True)
-        #t = threading.Thread(target=self.model.QuoteDataThreads())
-        #t.start()
-        self.model.start()
+        
+        self.analysis_window.Show(True)
+        self.analysis_window.SetFocus()
+       
+    
+    def OnNewRealtimeWindow(self, evt):
+        self.realtime_window.Show(True)
+        self.realtime_window.SetFocus()
+    def OnRealtimePaint(self, evt):
+       dc = wx.PaintDC(self.realtime_panel)
+       #dc.DrawBitmap(self.Buffer, 0, 0) 
+       dc.Clear()     
+       draw_realtime(dc, self.realtime_data, 8.17)
+    def RealtimeDataArrive(self, message): 
+        if self.realtime_window.IsShownOnScreen():       
+            self.realtime_data = message.data
+            self.realtime_panel.Refresh()  
+        
 
         
         
