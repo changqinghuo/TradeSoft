@@ -17,7 +17,7 @@ class Control:
         
         self.mainwindow.Show(True)
         app.SetTopWindow(self.mainwindow)
-        self.analysis_data = self.model.GetQuoteData('002094', 300, 5).df
+        self.analysis_data = self.model.GetQuoteData('002094', 60, 1).df
         
         for d in self.model.symbol_quote_dict.keys():            
             pub.subscribe(self.AnalysisDataArrive, d+"ANALYSISDATA")
@@ -28,7 +28,7 @@ class Control:
        dc = wx.PaintDC(self.analysis_panel)
        #dc.DrawBitmap(self.Buffer, 0, 0) 
        dc.Clear()     
-       draw_candle(dc, self.analysis_data)
+       draw_realtime(dc, self.analysis_data, 8.21)
                 
 
     def OnEraseBack(self, evt):        
