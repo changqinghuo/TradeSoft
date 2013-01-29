@@ -3,6 +3,7 @@ from wx.lib.pubsub import Publisher as pub
 import datetime
 import threading
 import time
+import codecs
 
 class QuoteDataThread(threading.Thread):
     def __init__(self, symbol, period=300, num_day=5):
@@ -46,9 +47,14 @@ class DataManager(threading.Thread):
         threading.Thread.__init__(self)
         self.quotedata = None
         self.symbol_quote_dict = {"002094":None} 
-        
+        self.symbol_list = {}
+        self._GetStockList()
                   
-
+    def _GetStockList(self):
+        f = codecs.open("../model/chinastock_utf.txt", 'r', 'utf-8')
+        for line in f:
+            sym, name = line.split(',')
+            self.symbol_list[sym] = name
     def GetQuoteData(self, quote, period=300, num_day=5): 
         try:       
             self.quotedata = GoogleIntradayQuote(quote,period, num_day)

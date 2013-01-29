@@ -73,7 +73,7 @@ class MyParentFrame(wx.MDIParentFrame):
         win.SetAlignment(wx.LAYOUT_BOTTOM)
         #win.SetBackgroundColour(wx.Colour(0, 0, 255))
         win.SetSashVisible(wx.SASH_TOP, True)
-
+        
         self.bottomWindow = win
 
 
@@ -97,6 +97,8 @@ class MyParentFrame(wx.MDIParentFrame):
         win.SetOrientation(wx.LAYOUT_VERTICAL)
         win.SetAlignment(wx.LAYOUT_LEFT)
         #win.SetBackgroundColour(wx.Colour(0, 255, 255))
+        l1 = wx.StaticText(win, -1,  "Enter Symbol", pos=(5,5))
+        self.symbol_ctrl = wx.TextCtrl(win, -1, "Enter Symbol", pos=(5, 50), size=(100, -1), style=wx.TE_PROCESS_ENTER)
         win.SetSashVisible(wx.SASH_RIGHT, True)
 
         self.leftWindow2 = win
