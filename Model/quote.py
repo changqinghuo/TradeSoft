@@ -69,7 +69,7 @@ class GoogleIntradayQuote(Quote):
     dict = {}
     url_string = "http://www.google.com/finance/getprices?q={0}".format(self.symbol)
     url_string += "&i={0}&p={1}d&f=d,o,h,l,c,v".format(interval_seconds,num_days)
-    csv = urllib2.urlopen(url_string, timeout=1).readlines()
+    csv = urllib2.urlopen(url_string, timeout=3).readlines()
     for bar in xrange(7,len(csv)):
       if csv[bar].count(',')!=5: continue
       offset,close,high,low,open_,volume = csv[bar].split(',')

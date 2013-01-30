@@ -26,6 +26,9 @@ def draw_realtime(dc, df, last_close):
     ymax = size.height-50
     dc.SetDeviceOrigin(10, ymax+40)
     dc.SetAxisOrientation(True, True)
+    if df is None or len(df) == 0:
+        dc.DrawText("Data is not available now, please wait.....", xmax/2, ymax/2)
+        return 
     #dc.SetBackground(wx.Brush(wx.WHITE))
     
     close_data = df['close']    
@@ -74,9 +77,14 @@ def draw_candle(dc, df):
     """
     size=dc.GetSize()         
     windowWidth = size.width-50
-    windowHeight = size.height-100
-    dc.SetDeviceOrigin(0, windowHeight)
-    dc.SetAxisOrientation(True, True)    
+    windowHeight = size.height-50
+    dc.SetDeviceOrigin(0, windowHeight+40)
+    dc.SetAxisOrientation(True, True)  
+    if df is None or len(df) == 0:
+        dc.DrawText("Data is not available now, please wait.....", windowWidth/2, windowHeight/2)
+        return 
+    
+  
     
 
     stockRange = (pd.Series.min(df['low']), pd.Series.max(df['high']))

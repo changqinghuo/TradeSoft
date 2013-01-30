@@ -25,9 +25,12 @@ class Control:
         self.data_manager = DataManager() 
         self.data_manager.start()
         self.symbol = '002094'
-        self.realtime_data = self.data_manager.GetQuoteData(self.symbol, 60, 1).df
-        self.analysis_data = self.data_manager.GetQuoteData(self.symbol, 1800, 30).df 
-        self._lastclose = self.data_manager.GetLastClost(self.symbol)
+        self.data_manager.UpdateSymbol(self.symbol)
+        #self.realtime_data = self.data_manager.GetQuoteData(self.symbol, 60, 1).df
+        #self.analysis_data = self.data_manager.GetQuoteData(self.symbol, 1800, 30).df 
+        self._lastclose = self.data_manager.GetLastClose(self.symbol)
+        self.realtime_data = None
+        self.analysis_data = None
         #for d in self.data_manager.symbol_quote_dict.keys():            
         pub.subscribe(self.AnalysisDataArrive, "ANALYSISDATA")
         pub.subscribe(self.RealtimeDataArrive, "REALTIMEDATA")
@@ -43,7 +46,7 @@ class Control:
             self.data_manager.UpdateSymbol(sym)
             self.realtime_window.SetTitle(sym)
             self.analysis_window.SetTitle(sym)
-            self._lastclose = self.data_manager.GetLastClost(sym)
+            self._lastclose = self.data_manager.GetLastClose(sym)
         
     def OnKeyDown(self, evt):
         keycode = evt.GetKeyCode()
@@ -60,7 +63,7 @@ class Control:
     def OnEraseBack(self, evt):        
         pass
     def AnalysisDataArrive(self, message):
-        if self.analysis_window.IsShownOnScreen():           
+        #if self.analysis_window.IsShownOnScreen():           
             self.analysis_data = message.data
             self.analysis_panel.Refresh()  
     def OnNewAnalysisWindow(self, evt):
@@ -91,7 +94,7 @@ class Control:
        dc.Clear()     
        draw_realtime(dc, self.realtime_data, self._lastclose)
     def RealtimeDataArrive(self, message): 
-        if self.realtime_window.IsShownOnScreen():       
+        #if self.realtime_window.IsShownOnScreen():       
             self.realtime_data = message.data
             self.realtime_panel.Refresh()  
         

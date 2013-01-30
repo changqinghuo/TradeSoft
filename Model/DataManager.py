@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*- 
+
 from quote import *
 from wx.lib.pubsub import Publisher as pub
 import datetime
 import threading
 import time
 import codecs
+import sys
 from StockData import StockData
 
 class QuoteDataThread(threading.Thread):
@@ -18,33 +21,49 @@ class QuoteDataThread(threading.Thread):
         self._message_topic = "ANALYSISDATA"
         if self.period == 60:
             self._message_topic = "REALTIMEDATA"
+        self.done = False
         
     def run(self):
-        done = False
+
         old = datetime.datetime.now() + datetime.timedelta(minutes = -1)
         old = datetime.datetime(old.year, old.month, old.day, old.hour, old.minute)
-        while True:
-            try:
-                
-                now = datetime.datetime.now()
-                now =  datetime.datetime(now.year, now.month, now.day, now.hour, now.minute)
+        while not self.done:
+            try:                
+                now = datetime.datetime.now()                
                # print now, "  ", old
-                 
-                if True:#now > old:                   
+                
+                if self._IsMarketOpen(now):#now > old: 
+                    if now.second > 10:
+                        now =  datetime.datetime(now.year, now.month, now.day, now.hour, now.minute) 
+                        if now > old:                 
+                            q = GoogleIntradayQuote(self.symbol,self.period, self.num_day)
+                            if q.datetime[-1] == now:
+                                self.lastupdate_time = q.datetime[-1]
+                                old = now
+                                self.quotedata = q
+                                pub.sendMessage(self._message_topic, self.quotedata.df) 
+                    time.sleep(1)
+                                #print q.df.ix[-1]
+                                #print q.datetime[-1], ",", q.open[-1], ", ", q.high[-1], ", ", q.close[-1], ", ", q.low[-1], ", ", q.volume[-1]
+ 
+                else:
                     q = GoogleIntradayQuote(self.symbol,self.period, self.num_day)
-                    if True:#q.datetime[-1] == now:
-                        self.lastupdate_time = q.datetime[-1]
-                        old = now
-                        self.quotedata = q
-                        pub.sendMessage(self._message_topic, self.quotedata.df) 
-                        #print q.df.ix[-1]
-                        #print q.datetime[-1], ",", q.open[-1], ", ", q.high[-1], ", ", q.close[-1], ", ", q.low[-1], ", ", q.volume[-1]
-                time.sleep(1) 
-                           
+                    self.quotedata = q
+                    pub.sendMessage(self._message_topic, self.quotedata.df) 
+                    self.done = True                  
+                               
      
                 
             except:
-                done = False
+                print str(sys.exc_info())
+                self.done = False
+    def _IsMarketOpen(self, dt):
+        if dt.weekday() == 5 or dt.weekday() == 6:
+            return False
+        if dt.time()> datetime.time(15,0,0) or dt.time < datetime.time(9, 15, 0):
+            return False
+        return True
+
 
 class DataManager(threading.Thread):
     """Singleton datamanager"""
@@ -56,8 +75,8 @@ class DataManager(threading.Thread):
         self._GetStockList()
         self.symbol = "000001"
         self.thread_list = []
-    def GetLastClost(self, sym):
-        if sym[0] is '6' or sym is '000001':
+    def GetLastClose(self, sym):
+        if sym.startswith('6') or sym == '000001':
             sym = "sh"+sym
         else:
             sym = 'sz'+sym        
@@ -83,8 +102,13 @@ class DataManager(threading.Thread):
     
     def UpdateSymbol(self, sym):
         self.symbol = sym
-        for t in self.thread_list:
-            t.symbol = sym
+        self.thread_list = []
+        realtime_thread = QuoteDataThread(self.symbol, 60, 1)
+        realtime_thread.start()
+        self.thread_list.append(realtime_thread)
+        analysis_thread = QuoteDataThread(self.symbol, 300, 5)
+        analysis_thread.start();
+        self.thread_list.append(analysis_thread)     
         
         
         
