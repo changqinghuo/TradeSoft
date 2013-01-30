@@ -4,6 +4,7 @@ import datetime
 import threading
 import time
 import codecs
+from StockData import StockData
 
 class QuoteDataThread(threading.Thread):
     def __init__(self, symbol, period=300, num_day=5):
@@ -14,6 +15,9 @@ class QuoteDataThread(threading.Thread):
         self.dt = datetime.datetime(2000, 1, 1)
         self.quotedata = None
         self.lastupdate_time = datetime.datetime(2000, 1, 1)
+        self._message_topic = "ANALYSISDATA"
+        if self.period == 60:
+            self._message_topic = "REALTIMEDATA"
         
     def run(self):
         done = False
@@ -26,14 +30,15 @@ class QuoteDataThread(threading.Thread):
                 now =  datetime.datetime(now.year, now.month, now.day, now.hour, now.minute)
                # print now, "  ", old
                  
-                if now > old:                   
+                if True:#now > old:                   
                     q = GoogleIntradayQuote(self.symbol,self.period, self.num_day)
-                    if q.datetime[-1] == now:
+                    if True:#q.datetime[-1] == now:
                         self.lastupdate_time = q.datetime[-1]
                         old = now
                         self.quotedata = q
-                        pub.sendMessage(self.symbol+"ANALYSISDATA", self.quotedata.df) 
-                        print self.lastupdate_time
+                        pub.sendMessage(self._message_topic, self.quotedata.df) 
+                        #print q.df.ix[-1]
+                        #print q.datetime[-1], ",", q.open[-1], ", ", q.high[-1], ", ", q.close[-1], ", ", q.low[-1], ", ", q.volume[-1]
                 time.sleep(1) 
                            
      
@@ -46,15 +51,25 @@ class DataManager(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.quotedata = None
-        self.symbol_quote_dict = {"002094":None} 
-        self.symbol_list = {}
+        self.symbol_quote_dict = {"000001":None} 
+        self.symbol_dict = {}
         self._GetStockList()
-                  
+        self.symbol = "000001"
+        self.thread_list = []
+    def GetLastClost(self, sym):
+        if sym[0] is '6' or sym is '000001':
+            sym = "sh"+sym
+        else:
+            sym = 'sz'+sym        
+        q = StockData(sym)
+        return q.lastClose
+        
+                      
     def _GetStockList(self):
         f = codecs.open("../model/chinastock_utf.txt", 'r', 'utf-8')
         for line in f:
             sym, name = line.split(',')
-            self.symbol_list[sym] = name
+            self.symbol_dict[sym] = name
     def GetQuoteData(self, quote, period=300, num_day=5): 
         try:       
             self.quotedata = GoogleIntradayQuote(quote,period, num_day)
@@ -66,16 +81,29 @@ class DataManager(threading.Thread):
     def GetQuoteRealtime(self, quote):
         pass
     
+    def UpdateSymbol(self, sym):
+        self.symbol = sym
+        for t in self.thread_list:
+            t.symbol = sym
+        
+        
+        
     def QuoteDataThreads(self):
         
        
         done = True
        # while True:
-        thread_list = []
-        for d in self.symbol_quote_dict.keys(): 
-            t = QuoteDataThread(d, 60, 1)
-            t.start()            
-            thread_list.append(t)
+
+        realtime_thread = QuoteDataThread(self.symbol, 60, 1)
+        realtime_thread.start()
+        self.thread_list.append(realtime_thread)
+        analysis_thread = QuoteDataThread(self.symbol, 300, 10)
+        analysis_thread.start();
+        self.thread_list.append(analysis_thread)
+#        for d in self.symbol_quote_dict.keys(): 
+#            t = QuoteDataThread(d, 60, 1)
+#            t.start()            
+#            thread_list.append(t)
 #            done = True
 #            for t in thread_list: 
 #                time.sleep(1)               

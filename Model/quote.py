@@ -88,7 +88,14 @@ class GoogleIntradayQuote(Quote):
    
    
 if __name__ == '__main__':
-  q = GoogleIntradayQuote('002094',300, 30)
-  q.write_csv("test.csv")
-  q.read_csv("test.csv")
-  print q.df['close']                                    # print it out
+    while True:
+        try:
+            q = GoogleIntradayQuote('600016',60, 2)
+            q.write_csv("test.csv")
+            time.sleep(1)
+            print q.datetime[-1], ",", q.open[-1], ",", q.close[-1], ", " ,q.high[-1], ",", q.low[-1], ",", q.volume[-1]/100 
+        except :
+            pass
+  #q.write_csv("test.csv")
+  #q.read_csv("test.csv")
+  #print q.df['close']                                    # print it out

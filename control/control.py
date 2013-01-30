@@ -36,9 +36,12 @@ class Control:
         
 
     def OnSymbolCtrlEnter(self, evt):
-        self.symbol = self.mainwindow.symbol_ctrl.GetValue()
-        if self.symbol in self.data_manager.symbol_list:
-            print self.symbol
+        sym = self.mainwindow.symbol_ctrl.GetValue()
+        if sym in self.data_manager.symbol_dict:
+            self.symbol = sym
+            self.data_manager.UpdateSymbol(sym)
+            self.realtime_window.SetTitle(sym)
+            self.analysis_window.SetTitle(sym)
         
     def OnKeyDown(self, evt):
         keycode = evt.GetKeyCode()
