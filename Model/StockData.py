@@ -24,7 +24,10 @@ class StockData:
         self.datetime = 0
         self.type = 'r'
         self.__storeData = pandas.Series()        
-        self.url = "http://hq.sinajs.cn/list="+self.stockId            
+        self.url = "http://hq.sinajs.cn/list="+self.stockId
+        line = urllib2.urlopen(self.url).read()
+        self.parseData(line)
+                  
         
     def parseData(self, data):
         try:            

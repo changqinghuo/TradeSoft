@@ -27,6 +27,7 @@ class Control:
         self.symbol = '002094'
         self.realtime_data = self.data_manager.GetQuoteData(self.symbol, 60, 1).df
         self.analysis_data = self.data_manager.GetQuoteData(self.symbol, 1800, 30).df 
+        self._lastclose = self.data_manager.GetLastClost(self.symbol)
         #for d in self.data_manager.symbol_quote_dict.keys():            
         pub.subscribe(self.AnalysisDataArrive, "ANALYSISDATA")
         pub.subscribe(self.RealtimeDataArrive, "REALTIMEDATA")
@@ -42,6 +43,7 @@ class Control:
             self.data_manager.UpdateSymbol(sym)
             self.realtime_window.SetTitle(sym)
             self.analysis_window.SetTitle(sym)
+            self._lastclose = self.data_manager.GetLastClost(sym)
         
     def OnKeyDown(self, evt):
         keycode = evt.GetKeyCode()
@@ -87,7 +89,7 @@ class Control:
        dc = wx.PaintDC(self.realtime_panel)
        #dc.DrawBitmap(self.Buffer, 0, 0) 
        dc.Clear()     
-       draw_realtime(dc, self.realtime_data, 8.17)
+       draw_realtime(dc, self.realtime_data, self._lastclose)
     def RealtimeDataArrive(self, message): 
         if self.realtime_window.IsShownOnScreen():       
             self.realtime_data = message.data
