@@ -7,7 +7,7 @@ import threading
 import time
 import codecs
 import sys
-from StockData import StockData
+from quote_realtime import QuoteRealtimeSina
 
 class QuoteDataThread(threading.Thread):
     def __init__(self, symbol, period=300, num_day=5):
@@ -60,7 +60,7 @@ class QuoteDataThread(threading.Thread):
     def _IsMarketOpen(self, dt):
         if dt.weekday() == 5 or dt.weekday() == 6:
             return False
-        if dt.time()> datetime.time(15,0,0) or dt.time < datetime.time(9, 15, 0):
+        if dt.time()> datetime.time(15,0,0) or dt.time() < datetime.time(9, 15, 0):
             return False
         return True
 
@@ -75,14 +75,40 @@ class DataManager(threading.Thread):
         self._GetStockList()
         self.symbol = "000001"
         self.thread_list = []
-    def GetLastClose(self, sym):
-        if sym.startswith('6') or sym == '000001':
-            sym = "sh"+sym
-        else:
-            sym = 'sz'+sym        
-        q = StockData(sym)
-        return q.lastClose
+        self.realtimequote_dict = {}
+        self.InitializeRealtimeQuote()
         
+    def GetLastClose(self, sym):
+        return self.realtimequote_dict[sym].last_close
+    def InitializeRealtimeQuote(self):
+        def convertsym(sym):
+            if sym.startswith('6') or sym == '000001':
+                sym = "sh"+sym
+            else:
+                sym = 'sz'+sym
+            return sym
+        stock = [key for key in self.symbol_dict]
+        
+        try:
+            i = 0
+            step = 800
+            while i < len(stock):
+                if i+step < len(stock):                
+                    url = "http://hq.sinajs.cn/list=" + ','.join(convertsym(stock)for stock in stock[i:i+step])
+                    i = i +step
+                else:
+                    url = url = "http://hq.sinajs.cn/list=" + ','.join(convertsym(stock)for stock in stock[i:])
+                    i= len(stock)
+                print url
+                lines = urllib2.urlopen(url, timeout=5).readlines()
+                for line in lines:
+                    rtquote = QuoteRealtimeSina(line)
+                    self.realtimequote_dict[rtquote.stock_id[2:]] = rtquote
+            for key in self.realtimequote_dict:
+                print key, ":", self.realtimequote_dict[key].stock_name, self.realtimequote_dict[key].last_close
+        except:
+            print str(sys.exc_info())
+
                       
     def _GetStockList(self):
         f = codecs.open("../model/chinastock_utf.txt", 'r', 'utf-8')
@@ -147,7 +173,10 @@ class DataManager(threading.Thread):
         
     def run(self):
         self.QuoteDataThreads()
-                
+
+
+if __name__ == '__main__':
+    dm = DataManager()
         
         
         
