@@ -60,7 +60,9 @@ class QuoteDataThread(threading.Thread):
     def _IsMarketOpen(self, dt):
         if dt.weekday() == 5 or dt.weekday() == 6:
             return False
-        if dt.time()> datetime.time(15,0,0) or dt.time < datetime.time(9, 15, 0):
+        time1 = dt.time()
+        time2 = datetime.time(15,0,0)
+        if dt.time()> datetime.time(15,0,0) or dt.time() < datetime.time(9, 15, 0):
             return False
         return True
 
