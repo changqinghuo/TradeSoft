@@ -6,49 +6,55 @@ import re
 import datetime
 import time
 
-class StockData:
-    def __init__(self, stockid):
-        self.stockId = stockid
-        self.stockName = ""
+class QuoteRealtime:
+    def __init__(self, datatoparse):    
+        self.stock_id = ""
+        self.stock_name = ""
         self.open = 0
-        self.lastClose = 0
-        self.currentPrice = 0
+        self.last_close = 0
+        self.current_price = 0
         self.high = 0
         self.low = 0
         self.buy = 0
         self.sell = 0
-        self.buyList = []
-        self.sellList = []
-        self.tradeVolume = 0
-        self.tradeMoney = 0
+        self.buy_list = []
+        self.sell_list = []
+        self.trade_volume = 0
+        self.trade_money = 0
         self.datetime = 0
-        self.type = 'r'
-        self.__storeData = pandas.Series()        
-        self.url = "http://hq.sinajs.cn/list="+self.stockId
-        line = urllib2.urlopen(self.url).read()
-        self.parseData(line)
+        self.ParseData(datatoparse)
+    def ParseData(self, datatoparse):
+        pass
+    
+class QuoteRealtimeSina(QuoteRealtime):
+    def __init__(self, datatoparse):
+        QuoteRealtime.__init__(self, datatoparse)        
+        #self.__storeData = pandas.Series()        
+        #self.url = "http://hq.sinajs.cn/list="+self.stockId
+        #line = urllib2.urlopen(self.url).read()
+        #self.parseData(line)
                   
         
-    def parseData(self, data):
+    def ParseData(self, data):
         try:            
             values = data.split(',')
             idname = values[0]
             index = idname.index('=')
-            self.stockId = idname[index-8: index]
-            self.stockName = idname[index+2:]
+            self.stock_id = idname[index-8: index]
+            self.stock_name= idname[index+2:]
             self.open = float(values[1])
-            self.lastClose = float(values[2])
-            self.currentPrice = float(values[3])
+            self.last_close = float(values[2])
+            self.current_price = float(values[3])
             self.high = float(values[4])
             self.low = float(values[5])
             self.buy = float(values[6])
             self.sell = float(values[7])
-            self.tradeVolume = int(values[8])
-            self.tradeMoney = float(values[9])
+            self.trade_volume = int(values[8])
+            self.trade_money = float(values[9])
             for i in range(10, 20, 2):
-                self.buyList.append((float(values[i]), float(values[i+1])))
+                self.buy_list.append((float(values[i]), float(values[i+1])))
             for i in range(20, 29, 2):
-                self.sellList.append((float(values[i]), float(values[i+1])))
+                self.sell_list.append((float(values[i]), float(values[i+1])))
             line = values[30] + " " + values[31]
             rep = re.compile(r'(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):(\d{2})')
             m = rep.match(line)
@@ -64,7 +70,7 @@ class StockData:
         listdata = []
         df = self.__storeData.resample('5Min', 'ohlc',  fill_method='pad')
         for val in df.values:
-            a = StockData(self.stockId)
+            a = QuoteRealtimeSina(self.stockId)
             a.open = val[0]
             a.high = val[1]
             a.close =val[2]
@@ -84,7 +90,7 @@ class StockData:
         with open("model/realdata.txt", 'r') as datafile:
             val = {}
             for line in datafile:
-                a = StockData(self.stockId)
+                a = QuoteRealtimeSina(self.stockId)
                 if a.parseData(line):
                     val[a.datetime] = a.currentPrice
         self.__storeData = pandas.Series(val)
@@ -97,7 +103,7 @@ class StockData:
 #                while oldtime <= endtime:
 #                    try:
 #                        data = urllib2.urlopen(self.url,timeout=1).read().decode('gbk')
-#                        a = StockData(self.stockId)
+#                        a = QuoteRealtimeSina(self.stockId)
 #                        a.parseData(data)
 #                        if oldtime <= a.datetime:
 #                            datafile.write(data)
@@ -110,12 +116,12 @@ class StockData:
 #                        pass
             
 
-class StockData5Min(StockData):
+class StockData5Min(QuoteRealtimeSina):
     def __init__(self, stockid):
-        StockData.__init__(self, stockid)
+        QuoteRealtimeSina.__init__(self, stockid)
         self.__storeData = {}
     
-#a = StockData('sz002094')
+#a = QuoteRealtimeSina('sz002094')
 #a.getDataFromSina()
 #list = a.get5MinData()
 #for a in list:
