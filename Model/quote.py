@@ -87,9 +87,9 @@ class GoogleIntradayQuote(Quote):
             offset,close,high,low,open_,volume = csv[bar].split(',')
             if offset[0]=='a':
                 day = float(offset[1:])
-                offset = float(-1)
+                offset = 0
             else:
-                offset = float(offset)-1
+                offset = float(offset)
             open_,high,low,close = [float(x) for x in [open_,high,low,close]]
             dt = datetime.datetime.fromtimestamp(day+(interval_seconds*offset))
             self.append(dt, open_, high, low, close, volume)
@@ -220,7 +220,7 @@ if __name__ == '__main__':
   
     while True:
         try:
-            q = GoogleIntradayQuote('600016',60, 1)           
+            q = GoogleIntradayQuote('002094',300, 10)           
             q.write_csv(q.symbol+"test.csv")
             time.sleep(1)
             print q.dtstamp[-1], ",", q.open[-1], ",", q.close[-1], ", " ,q.high[-1], ",", q.low[-1], ",", q.volume[-1]/100 
