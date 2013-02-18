@@ -8,6 +8,8 @@ import time
 import codecs
 import sys
 from quote_realtime import QuoteRealtimeSina
+import pandas as pd
+import numpy as np
 
 class QuoteDataThread(threading.Thread):
     def __init__(self, symbol, period=300, num_day=5):
@@ -16,11 +18,20 @@ class QuoteDataThread(threading.Thread):
         self.period = period
         self.num_day = num_day
         self.dt = datetime.datetime(2000, 1, 1)
-        self.quotedata = None
-        self.lastupdate_time = datetime.datetime(2000, 1, 1)
+        self.quotedata = None      
+        
+        self.realtimedata = pd.DataFrame()
+        self.analysisdata = None
+        self.lastupdate = datetime.datetime(2000, 1, 1)
+        self.lastupdate_analysis = datetime.datetime(2000, 1, 1)
         self._message_topic = "ANALYSISDATA"
+       
         if self.period == 60:
             self._message_topic = "REALTIMEDATA"
+            realtime_index = self._GetRealtimeIndex()
+            rows = len(realtime_index)
+            matrix = np.zeros((rows, 5), dtype=np.float)
+            self.realtimedata = pd.DataFrame(matrix, index=realtime_index, columns=['open', 'high', 'low', 'close', 'volume'])
         self.done = False
         
     def run(self):
@@ -33,36 +44,53 @@ class QuoteDataThread(threading.Thread):
                # print now, "  ", old
                 
                 if self._IsMarketOpen(now):#now > old: 
-                    if now.second > 10:
-                        now =  datetime.datetime(now.year, now.month, now.day, now.hour, now.minute) 
-                        if now > old:                 
-                            q = GoogleIntradayQuote(self.symbol,self.period, self.num_day)
-                            if q.datetime[-1] == now:
-                                self.lastupdate_time = q.datetime[-1]
-                                old = now
-                                self.quotedata = q
-                                pub.sendMessage(self._message_topic, self.quotedata.df) 
-                    time.sleep(1)
-                                #print q.df.ix[-1]
-                                #print q.datetime[-1], ",", q.open[-1], ", ", q.high[-1], ", ", q.close[-1], ", ", q.low[-1], ", ", q.volume[-1]
+                    self._RealtimeMode()                   
  
                 else:
                     q = GoogleIntradayQuote(self.symbol,self.period, self.num_day)
                     self.quotedata = q
                     pub.sendMessage(self._message_topic, self.quotedata.df) 
-                    self.done = True                  
-                               
+                    self.done = True              
+                         
      
                 
             except:
                 print str(sys.exc_info())
                 self.done = False
     def _IsMarketOpen(self, dt):
-        if dt.weekday() == 5 or dt.weekday() == 6:
-            return False
-        if dt.time()> datetime.time(15,0,0) or dt.time() < datetime.time(9, 15, 0):
-            return False
+#        if dt.weekday() == 5 or dt.weekday() == 6:
+#            return False
+#        if dt.time()> datetime.time(15,0,0) or dt.time() < datetime.time(9, 15, 0):        
+#            return False
         return True
+    def _RealtimeMode(self):
+        now = datetime.datetime.now()          
+        now =  datetime.datetime(now.year, now.month, now.day, now.hour, now.minute) 
+        if now > self.lastupdate:                 
+            q = GoogleIntradayQuote(self.symbol,self.period, self.num_day)
+            if self.lastupdate == q.dtstamp[-1]:
+                return
+            if True:#q.dtstamp[-1] == now:
+                self.lastupdate = q.dtstamp[-1]
+                if self.period == 60:
+                    self.realtimedata = q.df
+                    pub.sendMessage(self._message_topic, self.realtimedata) 
+                else:                    
+                    self.quotedata = q
+                    pub.sendMessage(self._message_topic, self.quotedata.df) 
+                time.sleep(10)
+    def _GetRealtimeIndex(self):
+        today = datetime.date.today()
+        start = datetime.datetime(today.year, today.month, today.day , 9, 31,0)
+        end = datetime.datetime(today.year, today.month, today.day , 11, 30,0)
+        index = pd.date_range(start, end, freq='MIN')
+        start = datetime.datetime(today.year, today.month, today.day , 13, 01,0)
+        end = datetime.datetime(today.year, today.month, today.day , 15, 01,0)
+        index2 = pd.date_range(start, end, freq='MIN')
+        index0 =  pd.date_range(datetime.datetime(today.year, today.month, today.day , 9,26,0), periods=1)
+        index =index0+index+index2
+        return index
+ 
 
 
 class DataManager(threading.Thread):
@@ -76,6 +104,7 @@ class DataManager(threading.Thread):
         self.symbol = "000001"
         self.thread_list = []
         self.realtimequote_dict = {}
+        self.QuoteDataThreads()
         self.InitializeRealtimeQuote()
         
     def GetLastClose(self, sym):
@@ -91,7 +120,7 @@ class DataManager(threading.Thread):
         
         try:
             i = 0
-            step = 800
+            step = 500
             while i < len(stock):
                 if i+step < len(stock):                
                     url = "http://hq.sinajs.cn/list=" + ','.join(convertsym(stock)for stock in stock[i:i+step])
@@ -127,6 +156,8 @@ class DataManager(threading.Thread):
         pass
     
     def UpdateSymbol(self, sym):
+        for t in self.thread_list:
+            t.done = True
         self.symbol = sym
         self.thread_list = []
         realtime_thread = QuoteDataThread(self.symbol, 60, 1)
@@ -162,7 +193,7 @@ class DataManager(threading.Thread):
 #                else:
 #                    
 #                    if self.symbol_quote_dict.setdefault(t.symbol) is None or\
-#                                                   self.symbol_quote_dict.get(t.symbol).datetime[-1] < t.lastupdate_time:
+#                                                   self.symbol_quote_dict.get(t.symbol).dtstamp[-1] < t.lastupdate_time:
 #                        self.symbol_quote_dict[t.symbol] = t.quotedata  
 #                    
 #                        #if t.lastupdate_time > self.symbol_quote_dict.setdefault(t.symbol, None).lastupdate_time:
@@ -176,7 +207,19 @@ class DataManager(threading.Thread):
 
 
 if __name__ == '__main__':
-    dm = DataManager()
+    today = datetime.date.today()
+    start = datetime.datetime(today.year, today.month, today.day , 9, 31,0)
+    end = datetime.datetime(today.year, today.month, today.day , 11, 30,0)
+    index = pd.date_range(start, end, freq='MIN')
+    start = datetime.datetime(today.year, today.month, today.day , 13, 01,0)
+    end = datetime.datetime(today.year, today.month, today.day , 15, 01,0)
+    index2 = pd.date_range(start, end, freq='MIN')
+    index0 =  pd.date_range(datetime.datetime(today.year, today.month, today.day , 9,26,0), periods=1)
+    index =index0+index+index2
+    
+    print len(index)
+    a = QuoteDataThread('002094', 60, 1)
+    a.start()
         
         
         

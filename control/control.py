@@ -72,10 +72,9 @@ class Control:
             self.analysis_panel = AnalysisPanel(self.analysis_window)
             self.analysis_panel.Bind(wx.EVT_PAINT, self.OnAnalysisPaint)
             self.analysis_panel.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBack)
-
-        
-        self.analysis_window.Show(True)
-        self.analysis_window.SetFocus()
+        else:        
+            self.analysis_window.Show(True)
+            self.analysis_window.SetFocus()
        
     
     def OnNewRealtimeWindow(self, evt):
@@ -84,19 +83,17 @@ class Control:
             self.realtime_panel = AnalysisPanel(self.realtime_window)
             self.realtime_panel.Bind(wx.EVT_PAINT, self.OnRealtimePaint)
             self.realtime_panel.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBack)
-
-        
-        self.realtime_window.Show(True)
-        self.realtime_window.SetFocus()
+        else:        
+            self.realtime_window.Show(True)
+            self.realtime_window.SetFocus()
     def OnRealtimePaint(self, evt):
        dc = wx.PaintDC(self.realtime_panel)
        #dc.DrawBitmap(self.Buffer, 0, 0) 
        dc.Clear()     
        draw_realtime(dc, self.realtime_data, self._lastclose)
-    def RealtimeDataArrive(self, message): 
-        #if self.realtime_window.IsShownOnScreen():       
-            self.realtime_data = message.data
-            self.realtime_panel.Refresh()  
+    def RealtimeDataArrive(self, message):      
+        self.realtime_data = message.data
+        self.realtime_panel.Refresh()  
         
 
         

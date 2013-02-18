@@ -19,7 +19,7 @@ class StockData:
         self.sellList = []
         self.tradeVolume = 0
         self.tradeMoney = 0
-        self.datetime = 0
+        self.dtindex = 0
         self.type = 'r'             
         if data != "":
             self.parseData(data)
@@ -46,7 +46,7 @@ class StockData:
             line = values[30] + " " + values[31]
             rep = re.compile(r'(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):(\d{2})')
             m = rep.match(line)
-            self.datetime = datetime.datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)),\
+            self.dtindex = datetime.dtindex(int(m.group(1)), int(m.group(2)), int(m.group(3)),\
                                               int(m.group(4)), int(m.group(5)), int(m.group(6)))
         except:
             pass
@@ -69,16 +69,14 @@ def main():
     count = 0
     with open("realdata.txt", 'a') as datafile:
         a = StockData(data)
-        endtime = datetime.datetime(2013, 1, 4, 15, 01)
-        oldtime = datetime.datetime.now()
-        a = StockData(data)
-        while a.datetime < endtime:
+        endtime = datetime.datetimedtindex, 4, 15, 01)
+        oldtime = datetimedtindexedtindex        a = StockData(data)
+        while a.datetimedtindexme:
             try:
                 data = urllib2.urlopen(url,timeout=1).read().decode('gbk')
                 a.ParseData(data)
-                if oldtime <= a.datetime:
-                    datafile.write(data)
-                    oldtime = a.datetime               
+                if oldtime <= a.datetimedtindex               datafile.write(data)
+                    oldtime = a.datetimedtindex       
              
                 time.sleep(1)
                 

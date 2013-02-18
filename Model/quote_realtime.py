@@ -21,7 +21,7 @@ class QuoteRealtime:
         self.sell_list = []
         self.trade_volume = 0
         self.trade_money = 0
-        self.datetime = 0
+        self.dtstamp = 0
         self.ParseData(datatoparse)
     def ParseData(self, datatoparse):
         pass
@@ -58,7 +58,7 @@ class QuoteRealtimeSina(QuoteRealtime):
             line = values[30] + " " + values[31]
             rep = re.compile(r'(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):(\d{2})')
             m = rep.match(line)
-            self.datetime = datetime.datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)),\
+            self.dtstamp = datetime.datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)),\
                                               int(m.group(4)), int(m.group(5)), int(m.group(6)))
             return True
         except:
@@ -92,23 +92,23 @@ class QuoteRealtimeSina(QuoteRealtime):
             for line in datafile:
                 a = QuoteRealtimeSina(self.stockId)
                 if a.parseData(line):
-                    val[a.datetime] = a.currentPrice
+                    val[a.dtindex] = a.currentPrice
         self.__storeData = pandas.Series(val)
        
             
 #            with open("realdata.txt", 'a') as datafile:
-#                endtime = datetime.date + datetime.timedelta(hours=15)
-#                oldtime = datetime.datetime.now()
+#                endtime = dtindex.date + dtindex.timedelta(hours=15)
+#                oldtime = dtindex.dtindex.now()
 #                
 #                while oldtime <= endtime:
 #                    try:
 #                        data = urllib2.urlopen(self.url,timeout=1).read().decode('gbk')
 #                        a = QuoteRealtimeSina(self.stockId)
 #                        a.parseData(data)
-#                        if oldtime <= a.datetime:
+#                        if oldtime <= a.dtindex:
 #                            datafile.write(data)
-#                            oldtime = a.datetime 
-#                            self.__storeData[a.datetime] =  a           
+#                            oldtime = a.dtindex 
+#                            self.__storeData[a.dtindex] =  a           
 #                     
 #                        time.sleep(1)
 #                        

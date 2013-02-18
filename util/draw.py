@@ -1,15 +1,18 @@
 import wx
 import pandas as pd
 
+TRADETIME_LENGTH = 240
+
 def dfrange(df):
     pass
+
 
 def __realtime_data_to_point(close_list, last_close, xmax, ymax):
     low, high = pd.Series.min(close_list), pd.Series.max(close_list)
     draw_data_height = max(abs(low - last_close), abs(high-last_close))*2
-    xstep = xmax/len(close_list)
+    xstep = xmax/TRADETIME_LENGTH
     ystep = ymax/draw_data_height
-    return [ wx.Point(val[0]*xmax/len(close_list), (val[1]-(last_close-draw_data_height/2))*ystep) for val in  enumerate(close_list.values)]
+    return [ wx.Point((val[0]+1)*xmax/TRADETIME_LENGTH, (val[1]-(last_close-draw_data_height/2))*ystep) for val in  enumerate(close_list.values)]
 #    for val in enumerate(close_list.values):
 #        yield wx.Point(val[0]*xstep, (val[1]-(last_close-draw_data_height/2)*ystep))
 
@@ -21,6 +24,7 @@ def draw_realtime(dc, df, last_close):
                    open high low close volume
         datetime   xx   xx   xx   xx    xx
     """
+    df.to_csv('002094.csv')
     size=dc.GetSize()         
     xmax = size.width-50
     ymax = size.height-50
@@ -31,7 +35,9 @@ def draw_realtime(dc, df, last_close):
         return 
     #dc.SetBackground(wx.Brush(wx.WHITE))
     
-    close_data = df['close']    
+    
+    close_data = df['close']
+   
     
     low, high = (pd.Series.min(close_data), pd.Series.max(close_data))  
         
