@@ -44,13 +44,15 @@ class QuoteDataThread(threading.Thread):
                # print now, "  ", old
                 
                 if self._IsMarketOpen(now):#now > old: 
-                    self._RealtimeMode()                   
+                    self._RealtimeMode() 
+                    time.sleep(10)                   
  
                 else:
                     q = GoogleIntradayQuote(self.symbol,self.period, self.num_day)
                     self.quotedata = q
                     pub.sendMessage(self._message_topic, self.quotedata.df) 
-                    self.done = True              
+                    self.done = True    
+                        
                          
      
                 
@@ -78,7 +80,7 @@ class QuoteDataThread(threading.Thread):
                 else:                    
                     self.quotedata = q
                     pub.sendMessage(self._message_topic, self.quotedata.df) 
-                time.sleep(10)
+            
     def _GetRealtimeIndex(self):
         today = datetime.date.today()
         start = datetime.datetime(today.year, today.month, today.day , 9, 31,0)

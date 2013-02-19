@@ -9,6 +9,10 @@ def macd(df):
 def czsc(df):
     pass
 
+def _process_contain(df):
+    
+    
+    pass
 def _bi(df):
     pass
 def _duan(df):

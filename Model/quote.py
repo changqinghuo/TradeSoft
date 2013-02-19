@@ -180,6 +180,7 @@ class GoogleIntradayQuote(Quote):
         #self.df['volume'].fillna(0, inplace=True)
         self.df['volume'].fillna(0, inplace=True)
         self.df.fillna(method='ffill', inplace=True)
+        self.df.fillna(method = 'bfill', inplace=True)
         
         return self.df
 
