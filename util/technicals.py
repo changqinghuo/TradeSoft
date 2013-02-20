@@ -15,13 +15,51 @@ def macd(df):
 def czsc(df):
     pass
 
-def _process_contain(df):
-    
+def _process_contain(df):  
     
     pass
+
+def _fx(df):
+    result = []
+    highlast = df.ix[0]["high"]
+    lowlast = df.ix[0]["low"]
+    i = 1
+    while i < len(df)-1:
+        highlast = df.ix[i-1]["high"]
+        lowlast = df.ix[i-1]["low"]
+        high = df.ix[i]["high"]
+        low = df.ix[i]["low"]
+        highnext = df.ix[i+1]["high"]
+        lownext = df.ix[i+1]["low"]
+        
+        while (highnext < high and lownext > low) or (highnext > high and lownext < low):
+            if high < highlast:
+                high = max(high, highnext)
+                low = max(low, lownext)
+            if low < lowlast:
+                high = min(high, highnext)
+                low = min(low, lownext)
+            i = i + 1 
+            highnext = df.ix[i+1]["high"]
+            lownext = df.ix[i+1]["low"]       
+        
+        if high > highlast and high > highnext and low > lowlast and low > lownext:
+            result.append((K_DING, i))        
+        elif low < lowlast and low < lownext and high < highnext and high < highlast:
+            result.append((K_DI, i))        
+        i = i + 1
+    return result                    
+                          
+                          
+        
+        
+        
+        
 def _bi(df):
     highlast = df.ix[0]["high"]
     lowlast = df.ix[0]["low"]
+    bi_start = 0
+    bi_end = 0
     for i in range(1, len(df.index)):
         high = df.ix[i]["high"]
         low = df.ix[i]["low"]
@@ -38,13 +76,14 @@ def _bi(df):
     result = []
     result.append(0)
     i = 1
+    direction = DIRECTION_DOWN
     while i < len(df):
         high = df.ix[i]["high"]
         low = df.ix[i]["low"]
         i = i+1       
        
        #up trend
-        while i < len(df):           
+        while i < len(df):      
             
             high = df.ix[i]["high"]
             low = df.ix[i]["low"]        
@@ -53,14 +92,14 @@ def _bi(df):
                 knum_up = knum_up +1
                 highlast = high
                 lowlast = low
-            elif high <= highlast and low >= lowlast:
-                lowlast = low
+#            elif high <= highlast and low >= lowlast:
+#                lowlast = low
             else:
+                highlast = high
+                lowlast = low
                 break
-        if knum_up >= 5 and direction == DIRECTION_DOWN:
-            direction = DIRECTION_UP
-            result.append(i)
-        knum_up = 0
+        
+        
         
         #down trend
         while i < len(df):         
@@ -71,14 +110,44 @@ def _bi(df):
                 knum_down = knum_down + 1
                 highlast = high
                 lowlast = low
-            elif high <= highlast and low >= lowlast:
-                highlast = high
+#            elif high <= highlast and low >= lowlast:
+#                highlast = high
             else:
+                highlast = high
+                lowlast = low
                 break
-        if knum_down >= 5:
-            direction = DIRECTION_DOWN
-            result.append(i)
-        knum_down = 0 
+            
+        if direction == DIRECTION_DOWN:
+            if knum_up < 5:
+                knum_down = knum_down + knum_up
+                knum_up = 0
+            else:
+                direction = DIRECTION_UP
+                result.append(i-knum_up-2)
+                
+
+        if direction ==  DIRECTION_UP:
+            if knum_down < 5:
+                knum_up = knum_up + knum_down
+                knum_down = 0
+            else:
+                direction = DIRECTION_DOWN
+                result.append(i-knum_down-2)        
+            
+#        if direction ==  DIRECTION_UP and knum_down < 5:
+#            knum_up = knum_up + knum_down              
+#            
+#        
+#        if knum_up >= 5 and direction == DIRECTION_DOWN:
+#            direction = DIRECTION_UP
+#            result.append(i-knum_up)
+#            knum_up = 0
+#        
+#            
+#        if knum_down >= 5 and direction == DIRECTION_UP:
+#            direction = DIRECTION_DOWN
+#            result.append(i-knum_down)
+#            knum_down = 0 
         
     return result
          
@@ -133,7 +202,7 @@ def _thirdsell(df):
 def test():
     "test case for czsc technical"
     df = pd.DataFrame.from_csv('600016test.csv')
-    print _bi(df)
+    print _fx(df)
     class TestPanel(wx.Panel): 
         def __init__(self, parent):
             wx.Panel.__init__(self, parent)
