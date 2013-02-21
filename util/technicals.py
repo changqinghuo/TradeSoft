@@ -21,9 +21,11 @@ def _process_contain(df):
 
 def _fx(df):
     result = []
+    
     highlast = df.ix[0]["high"]
     lowlast = df.ix[0]["low"]
     i = 1
+    knum = 0
     while i < len(df)-1:
         highlast = df.ix[i-1]["high"]
         lowlast = df.ix[i-1]["low"]
@@ -32,22 +34,42 @@ def _fx(df):
         highnext = df.ix[i+1]["high"]
         lownext = df.ix[i+1]["low"]
         
-        while (highnext < high and lownext > low) or (highnext > high and lownext < low):
-            if high < highlast:
+        isave = i
+        knum = knum + 1
+        direction = DIRECTION_UP
+        if high > highlast and low > lowlast:
+            direction = DIRECTION_UP
+        if high < highlast and low < lowlast:
+            direction = DIRECTION_DOWN        
+        iscontain = False
+        while (highnext <= high and lownext >= low) or (highnext >= high and lownext <= low):
+            iscontain = True
+            if highnext >= high and lownext <= low:
+                isave = i
+
+            if direction == DIRECTION_UP:
                 high = max(high, highnext)
                 low = max(low, lownext)
-            if low < lowlast:
+            elif direction == DIRECTION_DOWN :
                 high = min(high, highnext)
                 low = min(low, lownext)
             i = i + 1 
-            highnext = df.ix[i+1]["high"]
-            lownext = df.ix[i+1]["low"]       
+            if i < len(df) - 1:
+                highnext = df.ix[i]["high"]
+                lownext = df.ix[i]["low"]       
+        if iscontain:
+            knum = knum + 1
+
+
         
         if high > highlast and high > highnext and low > lowlast and low > lownext:
-            result.append((K_DING, i))        
+            result.append((K_DING, isave, knum))  
+            knum = 0    
         elif low < lowlast and low < lownext and high < highnext and high < highlast:
-            result.append((K_DI, i))        
-        i = i + 1
+            result.append((K_DI, isave, knum))  
+            knum = 0 
+        i = i + 1 
+        
     return result                    
                           
                           
