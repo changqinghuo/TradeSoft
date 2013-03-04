@@ -1,7 +1,8 @@
-#Fri Feb 01 00:04:21 CST 2013
+#Sun Mar 03 17:09:19 CST 2013
 eclipse.preferences.version=1
 encoding//model/DataManager.py=utf-8
 encoding//model/quote_realtime.py=utf-8
+encoding//util/czsc.py=utf-8
 encoding//view/AnalysisPanel.py=iso-8859-15
 encoding//view/MainWindow.py=utf-8
 encoding/AnalysisPanel.py=iso-8859-15

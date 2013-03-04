@@ -18,12 +18,161 @@ def czsc(df):
 def _process_contain(df):  
     
     pass
+def _getfirstdirection(df):
+    highlast = df.ix[0]["high"]
+    lowlast = df.ix[0]["low"]
+    for i in range(1, len(df.index)):        
+        high = df.ix[i]["high"]
+        low = df.ix[i]["low"]
+        if high > highlast and low > lowlast:
+            direction = DIRECTION_UP
+            break
+        elif low < lowlast and high < highlast:
+            direction = DIRECTION_DOWN
+            break
+    return direction
 
+
+def _processdata_test(df):
+    result = pd.DataFrame(index= [i for i in range(len(df.index))], columns=["high", "low"])
+#    result.set_value(df.index[0], 'high', df.ix[0]['high'])
+#    result.set_value(df.index[0], 'low', df.ix[0]['low'])
+    direction = _getfirstdirection(df)
+    #result.set_value(0, 'high', df.ix[0]['high'])
+    #result.set_value(0, 'low', df.ix[0]['low'])
+    i = 0
+    while i < len(df)-1:
+        high = df.ix[i]["high"]
+        low = df.ix[i]["low"]
+        highnext = df.ix[i+1]["high"]
+        lownext = df.ix[i+1]["low"]    
+        
+        tmp = result.dropna()       
+        if len(tmp.index) > 0:
+            highlast = tmp.ix[tmp.index[-1]]['high']
+            lowlast = tmp.ix[tmp.index[-1]]['low']
+            if high > highlast and low > lowlast:
+                direction = DIRECTION_UP            
+            elif low < lowlast and high < highlast:
+                direction = DIRECTION_DOWN            
+        else:
+            direction = _getfirstdirection(df)    
+ 
+        iscontain = False
+        isave = i
+        while (high >= highnext and low <= lownext) or (highnext >= high and lownext <= low):
+            iscontain = True           
+            if direction == DIRECTION_UP:
+                if highnext > high:
+                    isave = i
+                high = max(high, highnext)
+                low = max(low, lownext)
+            
+            elif direction == DIRECTION_DOWN :
+                if lownext < low:
+                    isave = i
+                high = min(high, highnext)
+                low = min(low, lownext)
+            i = i + 1 
+            if i < len(df)-1:
+                highnext = df.ix[i]["high"]
+                lownext = df.ix[i]["low"]
+            else:
+                break       
+
+#        result.set_value(df.index[isave], 'high', high)
+#        result.set_value(df.index[isave], 'low', low)
+        result.set_value(isave, 'high', high)
+        result.set_value(isave, 'low', low)
+        if iscontain:
+            pass
+#            result.set_value(df.index[i], 'high', highnext)
+#            result.set_value(df.index[i], 'low', lownext)
+            #result.set_value(i, 'high', highnext)
+            #result.set_value(i, 'low', lownext)
+        else:
+            i = i + 1
+    return result.dropna()
+        
+def _processdata(df):
+    result = pd.DataFrame(index= df.index, columns=["high", "low"])   
+    
+    i = 0
+    while i < len(df):
+        high = df.ix[i]["high"]
+        low = df.ix[i]["low"]
+        if i < len(df)-1:
+            highnext = df.ix[i+1]["high"]
+            lownext = df.ix[i+1]["low"] 
+        else:
+            result.set_value(df.index[i], 'high', high)
+            result.set_value(df.index[i], 'low', low)  
+            break 
+        
+        tmp = result.dropna()       
+        if len(tmp.index) > 0:
+            highlast = tmp.ix[tmp.index[-1]]['high']
+            lowlast = tmp.ix[tmp.index[-1]]['low']
+            if high > highlast and low > lowlast:
+                direction = DIRECTION_UP            
+            elif low < lowlast and high < highlast:
+                direction = DIRECTION_DOWN            
+        else:
+            direction = _getfirstdirection(df)    
+ 
+        iscontain = False
+        isave = i
+        while (high >= highnext and low <= lownext) or (highnext >= high and lownext <= low):
+            iscontain = True           
+            if direction == DIRECTION_UP:
+                if highnext > high:
+                    isave = i
+                high = max(high, highnext)
+                low = max(low, lownext)
+            
+            elif direction == DIRECTION_DOWN :
+                if lownext < low:
+                    isave = i
+                high = min(high, highnext)
+                low = min(low, lownext)
+            i = i + 1 
+            if i < len(df):
+                highnext = df.ix[i]["high"]
+                lownext = df.ix[i]["low"]
+            else:
+                break       
+
+        if len(tmp) > 0:
+            highlast = tmp.ix[tmp.index[-1]]['high']
+            lowlast = tmp.ix[tmp.index[-1]]['low']
+            if (high >= highlast and low <= lowlast) or (highlast >= high and lowlast <= low):
+                if direction == DIRECTION_UP:
+                    if highlast > high:
+                        isave = tmp.index[-1]
+                    high = max(high, highnext)
+                    low = max(low, lownext)
+                
+                elif direction == DIRECTION_DOWN :
+                    if lowlast < low:
+                        isave = tmp.index[-1]
+                    high = min(high, highnext)
+                    low = min(low, lownext)              
+              
+                
+        result.set_value(df.index[isave], 'high', high)
+        result.set_value(df.index[isave], 'low', low)
+
+        if iscontain:
+            pass
+        else:
+            i = i + 1
+
+    return result.dropna()        
+        
 def _fx(df):
     result = []
     
-    highlast = df.ix[0]["high"]
-    lowlast = df.ix[0]["low"]
+
     i = 1
     knum = 0
     while i < len(df)-1:
@@ -32,43 +181,32 @@ def _fx(df):
         high = df.ix[i]["high"]
         low = df.ix[i]["low"]
         highnext = df.ix[i+1]["high"]
-        lownext = df.ix[i+1]["low"]
-        
-        isave = i
+        lownext = df.ix[i+1]["low"]     
         knum = knum + 1
-        direction = DIRECTION_UP
-        if high > highlast and low > lowlast:
-            direction = DIRECTION_UP
-        if high < highlast and low < lowlast:
-            direction = DIRECTION_DOWN        
-        iscontain = False
-        while (highnext <= high and lownext >= low) or (highnext >= high and lownext <= low):
-            iscontain = True
-            if highnext >= high and lownext <= low:
-                isave = i
-
-            if direction == DIRECTION_UP:
-                high = max(high, highnext)
-                low = max(low, lownext)
-            elif direction == DIRECTION_DOWN :
-                high = min(high, highnext)
-                low = min(low, lownext)
-            i = i + 1 
-            if i < len(df) - 1:
-                highnext = df.ix[i]["high"]
-                lownext = df.ix[i]["low"]       
-        if iscontain:
-            knum = knum + 1
-
-
-        
+       
         if high > highlast and high > highnext and low > lowlast and low > lownext:
-            result.append((K_DING, isave, knum))  
+            result.append((K_DING, i, knum+1))  
             knum = 0    
         elif low < lowlast and low < lownext and high < highnext and high < highlast:
-            result.append((K_DI, isave, knum))  
+            result.append((K_DI, i, knum+1))  
             knum = 0 
         i = i + 1 
+    
+    fxreulst = [(result[0][0], result[0][1])]  
+    fx_tmp = result[0]
+    i = 1
+#    while i < len(result):
+#        fx = result[i]
+#        if fx_tmp[0] == K_DI:
+#            if fx[0] == K_DI:
+#                i = i + 1
+#                continue
+#            if fx[1] - fx_tmp[1] <= 5:
+#                i = i + 1
+#                continue
+           
+            
+            
         
     return result                    
                           
@@ -224,7 +362,15 @@ def _thirdsell(df):
 def test():
     "test case for czsc technical"
     df = pd.DataFrame.from_csv('600016test.csv')
+#    testdf = _processdata(df)
+#    print testdf
+#    df = df.reindex(testdf.index)
+#    df['high'] = testdf['high']
+#    df['low'] = testdf['low']
+    
+
     print _fx(df)
+    
     class TestPanel(wx.Panel): 
         def __init__(self, parent):
             wx.Panel.__init__(self, parent)
