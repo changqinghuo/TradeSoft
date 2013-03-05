@@ -54,22 +54,58 @@ class ckx(object):
     def __init__(self):
         self.no, self.rhigh, self.rlow, self.high, self.low, \
         self.flag, self.fxqj, self.dir, self.bi,self.duan = ([] for _ in range(10))
+#        int no;                // K线序号 从1开始是
+#        float rhigh;        // 高值
+#        float rlow;            // 低值
+#        float high;        //包含处理后的高值
+#        float low;        //包含处理后的低值
+#        int    flag;            //1顶 -1底 0 非顶底
+#        float fxqj;        // 分型区间 如果为顶底 记录区间边界
+#        int dir;            //K线方向 1上 -1下 2 上包含 -2 下包含
+#        int bi;                //笔 1上 -1下 2 上包含 -2 下包含
+#        int duan;            //段 1上 -1下 2 上包含 -2 下包含
 
 
 class cbi(object):
     def __init__(self):
         self.no, self.noh, self.nol, self.high, self.low, self.dir, self.flag, self.qx = ([] for _ in range(8))
+#        int no; // 序号
+#        int noh; // 高点K线编号
+#        int nol;  // 低点K线编号
+#        float high; // 高点
+#        float low; // 低点
+#        int dir; // 方向 方向 1上 -1下 2 上包含 -2 下包含
+#        int flag; // 1顶 -1底
+#        int qk; // 特征1 2 之间是否存在缺口 
 
 
 class cduan(object):
     def __init__(self):
         self.no, self.noh, self.nol, self.high, self.low, self.flag, self.binum = ([] for _ in range(7))
+#        int no; // 序号
+#        int noh; // 高点K线编号
+#        int nol;  // 低点K线编号
+#        float high; // 高点
+#        float low; // 低点
+#        int flag; //  1顶 -1底
+#        int binum; // 包含几笔
 
 
 class czhongshu(object):
     def __init__(self):
         self.no, self.duanno, self.flag, self.ksno, self.jsno, self.znnum, \
         self.zg, self.zd, self.gg, self.dd, self.zz = ([] for _ in range(11))
+#        int no; // 序号
+#        int duanno; // 段序号
+#        int flag; // 走势方向 1上 -1下
+#        int ksno; // zg所在K线NO (有zg必有zd)
+#        int jsno; // zd所在K线NO
+#        int znnum; // 包含zn数
+#        float zg; // ZG=min(g1、g2)
+#        float zd; // ZD=max(d1、d2)
+#        float gg; // GG=max(gn);
+#        float dd; // dd=min(dn);
+#        float zz; // 震荡中轴(监视器)
 
 DIR_0 = 0
 DIR_UP = 1
@@ -307,9 +343,11 @@ class ChanlunCore:
                 if 0 == gdnum:
                     # 第一个分型
                     if tjg1:
+                        kx.fxqj = self.kxData[i-1].low
                         kx.flag = DIR_UP
                         kxlg = kx
                     elif tjd1:
+                        kx.fxqj = self.kxData[i-1].high
                         kx.flag = DIR_DN
                         kxld = kx
                     kxl = kx
@@ -665,6 +703,7 @@ class ChanlunCore:
         # 查找所有特征序列
         i = begin
         while i < kxnum - 1:
+            kx = self.kxData[i]
             if DIR_UP == kx.bi:
                 if binum > 0:
                     if DIR_DN == kxl.bi:
@@ -713,9 +752,12 @@ class ChanlunCore:
                     # 第一笔
                     kxl = kx
                     binum = binum + 1
+            i = i + 1
         #} # END 查找所有特征序列
     def findTZG(self, fromNo):
-        ret = self.xbData.end()
+        if len(self.xbData) == 0:
+            return None
+        ret = self.xbData[-1]
 
         kxnum = len(self.kxData)
         if fromNo >= kxnum:
@@ -836,6 +878,8 @@ class ChanlunCore:
         return ret
     def findTZD(self, fromNo):
         
+        if len(self.sbData) == 0:
+            return None
         ret = self.sbData[-1]
     
         kxnum = len(self.kxData)
@@ -975,9 +1019,9 @@ class ChanlunCore:
                 tzd = self.findTZD(next)
                 tzg = self.findTZG(next)
     
-                if self.sbData[-1] != tzd:
+                if len(self.sbData) != 0 and self.sbData[-1] != tzd:
                     dnum = tzd.nol
-                if self.xbData[-1] != tzg:
+                if len(self.xbData) != 0 and self.xbData[-1] != tzg:
                     gnum = tzg.noh
                 if dnum < gnum:
                     # 底 tzd
@@ -1104,6 +1148,7 @@ class ChanlunCore:
                     # 第一笔
                     num = num + 1
                     kxl = kx
+            i = i + 1
         #} # END 查找所有段
     def findHuiTiaoZS(self, duanno, begin, end, high, low):
         if len(self.xbData) >= 2:
@@ -1256,7 +1301,7 @@ class ChanlunCore:
                 
 def test():
     df = pd.DataFrame.from_csv('600016test.csv')
-    calinfo = CALCINFO(df, MIN1_DATA)
+    calinfo = CALCINFO(df, MIN5_DATA)
     #print calinfo.m_pData
     czsc = ChanlunCore()
     czsc.initBiQK(calinfo)
@@ -1265,10 +1310,16 @@ def test():
     for kx in czsc.kxData:
         print kx.flag
     czsc.initBi()
+    czsc.initDuan()
+    czsc.initDuanList()
+    print "bi ========================="
     for kx in czsc.kxData:
         if kx.bi == DIR_UP or kx.bi == DIR_DN:
             print kx.bi,  " ", kx.no
-    print len(czsc.kxData)
+#    print len(czsc.kxData)
+    print "duan=============================="
+    for duan in czsc.dData:
+        print duan.no, "    ", duan.noh, "    ", duan.nol
     
 #    for kx in czsc.kxData:
 #        print kx.no, ' ', kx.high, ' ', kx.low, ' ', kx.rhigh, ' ', kx.rlow

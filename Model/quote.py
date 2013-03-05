@@ -221,7 +221,7 @@ if __name__ == '__main__':
   
     while True:
         try:
-            q = GoogleIntradayQuote('002094',300, 10)           
+            q = GoogleIntradayQuote('600016',300, 10)           
             q.write_csv(q.symbol+"test.csv")
             time.sleep(1)
             print q.dtstamp[-1], ",", q.open[-1], ",", q.close[-1], ", " ,q.high[-1], ",", q.low[-1], ",", q.volume[-1]/100 
