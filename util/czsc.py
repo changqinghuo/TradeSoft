@@ -757,7 +757,7 @@ class ChanlunCore:
     def findTZG(self, fromNo):
         if len(self.xbData) == 0:
             return None
-        ret = self.xbData[-1]
+        ret = None
 
         kxnum = len(self.kxData)
         if fromNo >= kxnum:
@@ -877,10 +877,11 @@ class ChanlunCore:
         
         return ret
     def findTZD(self, fromNo):
+        ret = None
         
         if len(self.sbData) == 0:
-            return None
-        ret = self.sbData[-1]
+            return ret
+        
     
         kxnum = len(self.kxData)
         if fromNo >= kxnum: 
@@ -1015,13 +1016,14 @@ class ChanlunCore:
             while True:
                 dnum = kxnum
                 gnum = kxnum
+                
     
                 tzd = self.findTZD(next)
                 tzg = self.findTZG(next)
     
-                if len(self.sbData) != 0 and self.sbData[-1] != tzd:
+                if None != tzd:
                     dnum = tzd.nol
-                if len(self.xbData) != 0 and self.xbData[-1] != tzg:
+                if None != tzg:
                     gnum = tzg.noh
                 if dnum < gnum:
                     # 底 tzd
@@ -1148,12 +1150,13 @@ class ChanlunCore:
                     # 第一笔
                     num = num + 1
                     kxl = kx
+                    
             i = i + 1
         #} # END 查找所有段
     def findHuiTiaoZS(self, duanno, begin, end, high, low):
         if len(self.xbData) >= 2:
             zn = cbi() 
-            znl = self.xbData[-1]
+            znl = None
             zsit = czhongshu()
             findZSNew = True
             gg=0
@@ -1187,8 +1190,7 @@ class ChanlunCore:
                                     findZSNew = True
                             else:
                                 zsit = self.zsData[-1]
-                                zsit = self.zsData[-2]
-                                
+                                                 
                                 if zn.low > zsit.zg or zn.high < zsit.zd:
                                     # 离开中枢
                                     findZSNew = True
@@ -1219,7 +1221,7 @@ class ChanlunCore:
     def findFanTanZS(self, duanno, begin, end, high, low):
         if len(self.sbData) >= 2:
             zn = cbi()
-            znl = self.sbData[-1]
+            znl = None
             zsit = czhongshu()
             findZSNew = True
             gg, dd, num = ([0]*3)
@@ -1251,8 +1253,7 @@ class ChanlunCore:
                                     findZSNew = True
                             else:
                                 zsit = self.zsData[-1]
-                                zsit = self.zsData[-2]
-                                
+                                               
                                 if zn.low > zsit.zg or zn.high < zsit.zd:
                                     # 离开中枢
                                     findZSNew = True
@@ -1284,20 +1285,20 @@ class ChanlunCore:
         if len(self.zsData) > 0:
             self.zsData = []
         
-            self.initDuanList()
+        self.initDuanList()
             
-            if len(self.dData) > 0:
-                dit = cduan()
-                i = 0
-                for dit in self.dData:
-                    i = i + 1
-                    if DIR_UP == dit.flag:
-                        # 向上段
-                        self.findHuiTiaoZS(i, dit.nol, dit.noh, dit.high, dit.low)
-                    elif DIR_DN == dit.flag:
-                        # 向下段
-                        self.findFanTanZS(i, dit.noh, dit.nol, dit.high, dit.low)
-            #} # if dData.size() > 0:
+        if len(self.dData) > 0:
+            dit = cduan()
+            i = 0
+            for dit in self.dData:
+                i = i + 1
+                if DIR_UP == dit.flag:
+                    # 向上段
+                    self.findHuiTiaoZS(i, dit.nol, dit.noh, dit.high, dit.low)
+                elif DIR_DN == dit.flag:
+                    # 向下段
+                    self.findFanTanZS(i, dit.noh, dit.nol, dit.high, dit.low)
+        #} # if dData.size() > 0:
                 
 def test():
     df = pd.DataFrame.from_csv('600016test.csv')
@@ -1321,6 +1322,10 @@ def test():
     for duan in czsc.dData:
         print duan.no, "    ", duan.noh, "    ", duan.nol
     
+    print "zhongshu=========================="
+    czsc.initZhongshu()
+    for zs in czsc.zsData:
+        print zs.no, '    ', zs.duanno,'    ', zs.flag,'    ', zs.ksno, '    ',zs.jsno, '    ', zs.znnum
 #    for kx in czsc.kxData:
 #        print kx.no, ' ', kx.high, ' ', kx.low, ' ', kx.rhigh, ' ', kx.rlow
      
