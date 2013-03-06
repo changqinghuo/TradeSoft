@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-  
-
+#---History:
+# -----1 Convert from caomaolufei's code to python
+#     2 fix bug in initFx: kx.fxqj = self.kxData[i-1].low
+#    
 import pandas as pd
 
 
@@ -1317,6 +1320,11 @@ def test():
     for kx in czsc.kxData:
         if kx.bi == DIR_UP or kx.bi == DIR_DN:
             print kx.bi,  " ", kx.no
+    for bi in czsc.sbData:
+        print bi.no, "    ", bi.nol,"    " , bi.noh
+    print "xia bi data"
+    for bi in czsc.xbData:
+        print bi.no, "    ", bi.nol,"    " , bi.noh
 #    print len(czsc.kxData)
     print "duan=============================="
     for duan in czsc.dData:

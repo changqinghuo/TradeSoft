@@ -6,7 +6,15 @@ TRADETIME_LENGTH = 240
 def dfrange(df):
     pass
 
+def _init_dc(dc):
+    size=dc.GetSize()         
+    xmax = size.width-50
+    ymax = size.height-50
+    dc.SetDeviceOrigin(10, ymax+40)
+    dc.SetAxisOrientation(True, True)
+    return xmax, ymax
 
+    
 def __realtime_data_to_point(close_list, last_close, xmax, ymax):
     low, high = pd.Series.min(close_list), pd.Series.max(close_list)
     draw_data_height = max(abs(low - last_close), abs(high-last_close))*2
@@ -24,12 +32,7 @@ def draw_realtime(dc, df, last_close):
                    open high low close volume
         datetime   xx   xx   xx   xx    xx
     """
-    df.to_csv('002094.csv')
-    size=dc.GetSize()         
-    xmax = size.width-50
-    ymax = size.height-50
-    dc.SetDeviceOrigin(10, ymax+40)
-    dc.SetAxisOrientation(True, True)
+    xmax, ymax = _init_dc(dc)
     if df is None or len(df) == 0:
         dc.DrawText("Data is not available now, please wait.....", xmax/2, ymax/2)
         return 
@@ -81,13 +84,9 @@ def draw_candle(dc, df):
                    open high low close volume
         datetime   xx   xx   xx   xx    xx
     """
-    size=dc.GetSize()         
-    windowWidth = size.width-50
-    windowHeight = size.height-50
-    dc.SetDeviceOrigin(0, windowHeight+40)
-    dc.SetAxisOrientation(True, True)  
+    xmax, ymax = _init_dc(dc)  
     if df is None or len(df) == 0:
-        dc.DrawText("Data is not available now, please wait.....", windowWidth/2, windowHeight/2)
+        dc.DrawText("Data is not available now, please wait.....", xmax/2, ymax/2)
         return 
     
   
@@ -95,7 +94,7 @@ def draw_candle(dc, df):
 
     stockRange = (pd.Series.min(df['low']), pd.Series.max(df['high']))
     dfindex_len = df.shape[0]   
-    recwidth = float(windowWidth)/dfindex_len
+    recwidth = float(xmax)/dfindex_len
     i = 0
     for dt in df.index:
         row = df.ix[i]
@@ -104,16 +103,16 @@ def draw_candle(dc, df):
         open = row['open']
         low = row['low']
         pricediff = stockRange[1] - stockRange[0]
-        recheight = windowHeight*abs(close - open)/pricediff+1
-        x = i*windowWidth/dfindex_len + 1        
-        upperlineendY = (high - stockRange[0])*windowHeight/pricediff                 
-        lowerlineendY = (low - stockRange[0])*windowHeight/pricediff
+        recheight = ymax*abs(close - open)/pricediff+1
+        x = i*xmax/dfindex_len + 1        
+        upperlineendY = (high - stockRange[0])*ymax/pricediff                 
+        lowerlineendY = (low - stockRange[0])*ymax/pricediff
         drop = False
         if close >= open:                 
-            y = upperlineendY - (high - open)*windowHeight/pricediff       
+            y = upperlineendY - (high - open)*ymax/pricediff       
         else:                
             drop = True             
-            y = upperlineendY - (high - close)*windowHeight/pricediff  
+            y = upperlineendY - (high - close)*ymax/pricediff  
                    
         rec = (x, y, recwidth, recheight)
         upperline = (x+recwidth/2, y+recheight, x+recwidth/2, upperlineendY)
