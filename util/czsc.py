@@ -4,6 +4,7 @@
 #     2 fix bug in initFx: kx.fxqj = self.kxData[i-1].low
 #    
 import pandas as pd
+from util.draw import *
 
 
 TICK_DATA, MIN1_DATA, MIN5_DATA, MIN15_DATA, MIN30_DATA, MIN60_DATA,\
@@ -1301,7 +1302,59 @@ class ChanlunCore:
                 elif DIR_DN == dit.flag:
                     # 向下段
                     self.findFanTanZS(i, dit.noh, dit.nol, dit.high, dit.low)
+                    
         #} # if dData.size() > 0:
+    def draw(self, dc, df, interval):
+        calinfo = CALCINFO(df, interval)
+        self.initBiQK(calinfo)
+        self.initKx(calinfo)
+        self.initFX()
+        self.initBi()
+        self.initDuan()
+        self.initDuanList()
+        self.initZhongshu()
+        xmax, ymax = init_dc(dc)
+        dc.SetPen(wx.Pen(wx.RED, 1))
+        i = 0
+        num = 0
+        line = []
+        for i in range(len(self.kxData)):
+            kx = self.kxData[i]
+            if kx.bi == DIR_UP:
+
+                highx, highy = gethighpointfromdata(dc, df, i)
+                line.append(highx)
+                line.append(highy)
+            elif kx.bi == DIR_DN:
+                num += 1
+                lowx, lowy = getlowpointfromdata(dc, df, i)
+                line.append(lowx)
+                line.append(lowy)
+
+            if len(line) == 4:
+                dc.DrawLine(line[0], line[1], line[2], line[3])
+                tmp = []
+                tmp.append(line[2])
+                tmp.append(line[3])
+                line = tmp
+                
+                
+#        for i in range(len(self.sbData)):
+#            bi = self.sbData[i]
+#            highx, highy = gethighpointfromdata(dc, df, bi.noh-1)
+#            lowx, lowy = getlowpointfromdata(dc, df, bi.nol-1)
+#            dc.DrawLine(highx, highy, lowx, lowy)
+#        for i in range(len(self.xbData)):
+#            bi = self.xbData[i]
+#            highx, highy = gethighpointfromdata(dc, df, bi.nol-1)
+#            lowx, lowy = getlowpointfromdata(dc, df, bi.noh-1)
+#            dc.DrawLine(highx, highy, lowx, lowy)
+            
+            
+            
+        
+        
+        
                 
 def test():
     df = pd.DataFrame.from_csv('600016test.csv')
@@ -1320,11 +1373,12 @@ def test():
     for kx in czsc.kxData:
         if kx.bi == DIR_UP or kx.bi == DIR_DN:
             print kx.bi,  " ", kx.no
-    for bi in czsc.sbData:
-        print bi.no, "    ", bi.nol,"    " , bi.noh
     print "xia bi data"
     for bi in czsc.xbData:
         print bi.no, "    ", bi.nol,"    " , bi.noh
+    print "shang bi data"
+    for bi in czsc.sbData:
+        print bi.no, "    ", bi.nol, "    ", bi.noh
 #    print len(czsc.kxData)
     print "duan=============================="
     for duan in czsc.dData:

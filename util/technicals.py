@@ -2,7 +2,7 @@ import wx
 import pandas as pd
 from model.quote import Quote
 from util.draw import draw_candle
-
+from czsc import *
 DIRECTION_UP = 0
 DIRECTION_DOWN = 1
 K_DING = -1
@@ -376,11 +376,12 @@ def test():
             wx.Panel.__init__(self, parent)
             self.SetBackgroundColour('WHITE')    
             self.Bind(wx.EVT_PAINT, self.OnPaint)
-            
+            self.czsc = ChanlunCore()
     
         def OnPaint(self, event):
             dc = wx.PaintDC(self)           
             draw_candle(dc, df)
+            self.czsc.draw(dc, df, MIN5_DATA)
             
     class TestWindow(wx.Frame):
         def __init__(self, parent, id, title):

@@ -6,15 +6,37 @@ TRADETIME_LENGTH = 240
 def dfrange(df):
     pass
 
-def _init_dc(dc):
+def init_dc(dc):
     size=dc.GetSize()         
     xmax = size.width-50
     ymax = size.height-50
     dc.SetDeviceOrigin(10, ymax+40)
     dc.SetAxisOrientation(True, True)
     return xmax, ymax
+def _get_candlewith(dc, df):
+    xmax, _ = init_dc(dc)
+    return xmax/len(df)
 
+def gethighpointfromdata(dc, df, index):  
+    xmax, ymax = init_dc(dc)
+    recwidth = float(xmax)/len(df)
+    x = index*(recwidth) + recwidth/2 +1
+    high = df.ix[index]['high']
+    stockRange = (pd.Series.min(df['low']), pd.Series.max(df['high']))
+    upperlineendY = (high - stockRange[0])*ymax/(stockRange[1] - stockRange[0]) 
+    return x, upperlineendY
+
+def getlowpointfromdata(dc, df, index):
+    xmax, ymax = init_dc(dc)
+    recwidth = float(xmax)/len(df)
+    x = index*(recwidth) + recwidth/2 + 1
+    low = df.ix[index]['low']
+    stockRange = (pd.Series.min(df['low']), pd.Series.max(df['high']))
+    lowY = (low - stockRange[0])*ymax/(stockRange[1] - stockRange[0]) 
+    return x, lowY     
     
+def getdatafromaxis(dc):  
+    pass
 def __realtime_data_to_point(close_list, last_close, xmax, ymax):
     low, high = pd.Series.min(close_list), pd.Series.max(close_list)
     draw_data_height = max(abs(low - last_close), abs(high-last_close))*2
@@ -32,7 +54,7 @@ def draw_realtime(dc, df, last_close):
                    open high low close volume
         datetime   xx   xx   xx   xx    xx
     """
-    xmax, ymax = _init_dc(dc)
+    xmax, ymax = init_dc(dc)
     if df is None or len(df) == 0:
         dc.DrawText("Data is not available now, please wait.....", xmax/2, ymax/2)
         return 
@@ -84,7 +106,7 @@ def draw_candle(dc, df):
                    open high low close volume
         datetime   xx   xx   xx   xx    xx
     """
-    xmax, ymax = _init_dc(dc)  
+    xmax, ymax = init_dc(dc)  
     if df is None or len(df) == 0:
         dc.DrawText("Data is not available now, please wait.....", xmax/2, ymax/2)
         return 

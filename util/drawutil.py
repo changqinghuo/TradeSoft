@@ -2,11 +2,15 @@ import wx
 import pandas as pd
 
 TRADETIME_LENGTH = 240
-class DrawUtil:
-    def __init__(self):
-        pass
+class Draw(object):
+    def __init__(self, dc, df):
+        self._df = df
+        self._dc = dc
+        self._xmax, self._ymax = self.init_dc(dc)
         
-    def _init_dc(self, dc):
+    def SetStockData(self, df):
+        self._df = df
+    def init_dc(self, dc):
         size=dc.GetSize()         
         xmax = size.width-50
         ymax = size.height-50
@@ -14,8 +18,7 @@ class DrawUtil:
         dc.SetAxisOrientation(True, True)
         return xmax, ymax
     
-    def _getaxisfromdata(self, df):
-        
+    def _getaxisfromdata(self, df):        
         pass
     def _getdatafromaxis(self, df):
         pass
@@ -32,20 +35,20 @@ class DrawUtil:
     
         
         
-    def draw_realtime(self, dc, df, last_close):
+    def draw_realtime(self, dc,last_close):
         """ dc: device context
             df: pandas.dataframe
                        open high low close volume
             datetime   xx   xx   xx   xx    xx
         """
-        xmax, ymax = self._init_dc(dc)
-        if df is None or len(df) == 0:
+        xmax, ymax = self.init_dc(dc)
+        if self._df is None or len(self._df) == 0:
             dc.DrawText("Data is not available now, please wait.....", xmax/2, ymax/2)
             return 
         #dc.SetBackground(wx.Brush(wx.WHITE))
         
         
-        close_data = df['close']
+        close_data = self._df['close']
        
         
         low, high = (pd.Series.min(close_data), pd.Series.max(close_data))  
@@ -81,29 +84,30 @@ class DrawUtil:
             
         
     
-        
+    def draw_technical(self, dc, tech):
+        tech.Draw(dc)   
            
     
-    def draw_candle(self, dc, df):
+    def draw_candle(self, dc):
         """ dc: device context
             df: pandas.dataframe
                        open high low close volume
             datetime   xx   xx   xx   xx    xx
         """
-        xmax, ymax = self._init_dc(dc)  
-        if df is None or len(df) == 0:
+        xmax, ymax = self.init_dc(dc)  
+        if self._df is None or len(self._df) == 0:
             dc.DrawText("Data is not available now, please wait.....", xmax/2, ymax/2)
             return 
         
       
         
     
-        stockRange = (pd.Series.min(df['low']), pd.Series.max(df['high']))
-        dfindex_len = df.shape[0]   
+        stockRange = (pd.Series.min(self._df['low']), pd.Series.max(self._df['high']))
+        dfindex_len = self._df.shape[0]   
         recwidth = float(xmax)/dfindex_len
         i = 0
-        for dt in df.index:
-            row = df.ix[i]
+        for dt in self._df.index:
+            row = self._df.ix[i]
             close = row['close']
             high = row['high']
             open = row['open']
