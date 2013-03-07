@@ -5,6 +5,7 @@
 #    
 import pandas as pd
 from util.draw import *
+import copy
 
 
 TICK_DATA, MIN1_DATA, MIN5_DATA, MIN15_DATA, MIN30_DATA, MIN60_DATA,\
@@ -771,10 +772,10 @@ class ChanlunCore:
 
         bnum = len(self.xbData)
         if bnum >= 3:
-            #bi, bit, btz2 = (self.xbData[-1] for i in range(3))
+            bi, bit, btz2 = (None for i in range(3))
             #tz1 = cbi()
             
-            #tz1, tz2, tz3 = (cbi() for i in range(3)) # 特征元素1 2
+            tz1, tz2, tz3 = (cbi() for i in range(3)) # 特征元素1 2
 
             doTZ1 = True
             doTZ2 = False
@@ -788,7 +789,7 @@ class ChanlunCore:
                     continue
                 if doTZ1:
                     # 特征1
-                    tz1 = bi
+                    tz1 = copy.deepcopy(bi)
                     doTZ1 = False
                     doTZ2 = True
                     continue
@@ -811,14 +812,14 @@ class ChanlunCore:
                     if bi.high > tz1.high and bi.low > tz1.low:
                         # 上涨
                         btz2 = bi
-                        tz2 = bi
+                        tz2 = copy.deepcopy(bi)
                         doTZ2 = False
                         doTZ3 = True
                         continue
                         # ok 开始TZ3
                     elif bi.high < tz1.high and bi.low < tz1.low:
                         # 下跌
-                        tz1 = bi
+                        tz1 = copy.deepcopy(bi)
                         # 继续TZ2
                     else:
                         #TZ1 TZ2 处理在同一特征序列里的包含关系
@@ -829,7 +830,7 @@ class ChanlunCore:
                         else:
                             # 后包前 (笔破坏不处理)
                             btz2 = bi
-                            tz2 = bi
+                            tz2 = copy.deepcopy(bi)
                             doTZ2 = False
                             doTZ3 = True
                             continue
@@ -861,7 +862,7 @@ class ChanlunCore:
                     elif bi.high > tz2.high and bi.low > tz2.low:
                         # 上涨
                         tz1 = tz2
-                        tz2 = bi
+                        tz2 = copy.deepcopy(bi)
                         # 继续TZ3
                     else:
                         # 特征3 和 特征2 存在包含关系
@@ -873,7 +874,7 @@ class ChanlunCore:
                         else:
                             # 后包前
                             btz2 = bi
-                            tz3 = bi
+                            tz3 = copy.deepcopy(bi)
                             tz3.low = tz2.low
                             tz2 = tz3
                         # 继续TZ3
@@ -894,6 +895,10 @@ class ChanlunCore:
         
         bnum = len(self.sbData)
         if bnum >= 3:
+            bi, bit, btz2 = (None for i in range(3))
+            #tz1 = cbi()
+            
+            tz1, tz2, tz3 = (cbi() for i in range(3))                        
 #            BIIT bi, btz2=sbData.end(), bit
 #            cbi tz1, tz2, tz3; # 特征元素1 2
     
@@ -908,7 +913,7 @@ class ChanlunCore:
                     continue
                 if doTZ1:
                     # 特征1
-                    tz1 = bi
+                    tz1 = copy.deepcopy(bi)
                     doTZ1 = False
                     doTZ2 = True
                     continue
@@ -933,14 +938,14 @@ class ChanlunCore:
                     if bi.high < tz1.high and bi.low < tz1.low:
                         # 下跌
                         btz2 = bi
-                        tz2 = bi
+                        tz2 = copy.deepcopy(bi)
                         doTZ2 = False
                         doTZ3 = True
                         continue
                         # ok 开始TZ3
                     elif bi.high > tz1.high and bi.low > tz1.low:
                         # 上涨
-                        tz1 = bi
+                        tz1 = copy.deepcopy(bi)
                         # 继续TZ2
                     else:
                         #TZ1 TZ2 处理在同一特征序列里的包含关系
@@ -951,7 +956,7 @@ class ChanlunCore:
                         else:
                             # 后包前 (笔破坏不处理)
                             btz2 = bi
-                            tz2 = bi
+                            tz2 = copy.deepcopy(bi)
                             doTZ2 = False
                             doTZ3 = True
                             continue
@@ -984,7 +989,7 @@ class ChanlunCore:
                     elif bi.high < tz2.high and bi.low < tz2.low:
                         # 下跌
                         tz1 = tz2
-                        tz2 = bi
+                        tz2 = copy.deepcopy(bi)
                         # 继续TZ3
                     else:
                         # 特征3 和 特征2 存在包含关系
@@ -997,7 +1002,7 @@ class ChanlunCore:
                             # 后包前
                             btz2 = bi
     
-                            tz3 = bi
+                            tz3 = copy.deepcopy(bi)
                             tz3.high = tz2.high
                             tz2 = tz3
                         # 继续TZ3
@@ -1340,45 +1345,35 @@ class ChanlunCore:
         self.initBi()
         self.initTZXL()
         self.initDuan()
-#        self.initDuan()
-#        self.initDuanList()
-#        self.initZhongshu()
+        self.initDuanList()
+        self.initZhongshu()
         xmax, ymax = init_dc(dc)
-        dc.SetPen(wx.Pen(wx.RED, 1))
-        i = 0
-        num = 0
-        line = []
-#        for i in range(len(self.kxData)):
-#            kx = self.kxData[i]
-#            if kx.bi == DIR_UP:
-#
-#                highx, highy = gethighpointfromdata(dc, df, i)
-#                line.append(highx)
-#                line.append(highy)
-#            elif kx.bi == DIR_DN:
-#                num += 1
-#                lowx, lowy = getlowpointfromdata(dc, df, i)
-#                line.append(lowx)
-#                line.append(lowy)
-#
-#            if len(line) == 4:
-#                dc.DrawLine(line[0], line[1], line[2], line[3])
-#                tmp = []
-#                tmp.append(line[2])
-#                tmp.append(line[3])
-#                line = tmp
-                
-                
-        for i in range(len(self.sbData)):
-            bi = self.sbData[i]
+        dc.SetPen(wx.Pen(wx.BLUE, 1))
+        
+        #Draw bi         
+        bidata = self.sbData + self.xbData
+        for bi in bidata:
             highx, highy = gethighpointfromdata(dc, df, bi.noh-1)
             lowx, lowy = getlowpointfromdata(dc, df, bi.nol-1)
             dc.DrawLine(highx, highy, lowx, lowy)
-        for i in range(len(self.xbData)):
-            bi = self.xbData[i]
-            highx, highy = gethighpointfromdata(dc, df, bi.noh-1)
-            lowx, lowy = getlowpointfromdata(dc, df, bi.nol-1)
+        
+        #Draw duan
+        dc.SetPen(wx.Pen(wx.RED, 2))
+        for duan in self.dData:
+            highx, highy = gethighpointfromdata(dc, df, duan.noh-1)
+            lowx, lowy = getlowpointfromdata(dc, df, duan.nol-1)
             dc.DrawLine(highx, highy, lowx, lowy)
+        #Draw zhongshu
+        for zs in self.zsData:
+            highx, highy = gethighpointfromdata(dc, df, zs.ksno-1)
+            lowx, lowy = getlowpointfromdata(dc, df, zs.jsno-1)
+            dc.DrawLine(highx, highy, highx, lowy)
+            dc.DrawLine(highx, lowy, lowx, lowy)
+            dc.DrawLine(lowx, lowy, lowx, highy)
+            dc.DrawLine(lowx, highy, highx, highy)
+            
+                   
+
             
             
             
@@ -1420,7 +1415,9 @@ def test():
     print "zhongshu=========================="
     czsc.initZhongshu()
     for zs in czsc.zsData:
-        print zs.no, '    ', zs.duanno,'    ', zs.flag,'    ', zs.ksno, '    ',zs.jsno, '    ', zs.znnum
+        print zs.__dict__
+        
+        #print zs.no, '    ', zs.duanno,'    ', zs.flag,'    ', zs.ksno, '    ',zs.jsno, '    ', zs.znnum
 #    for kx in czsc.kxData:
 #        print kx.no, ' ', kx.high, ' ', kx.low, ' ', kx.rhigh, ' ', kx.rlow
      

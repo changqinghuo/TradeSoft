@@ -11,7 +11,9 @@ class Control:
     def __init__(self, app):        
         
         self.mainwindow = MyParentFrame()           
-        self.mainwindow.Bind(wx.EVT_MENU, self.OnNewAnalysisWindow, id=ID_Menu_Aanalysis)
+        self.mainwindow.Bind(wx.EVT_MENU, self.On5MinAnalysis, id=ID_Menu_5Min)
+        self.mainwindow.Bind(wx.EVT_MENU, self.On30MinAnalysis, id=ID_Menu_30Min)
+        self.mainwindow.Bind(wx.EVT_MENU, self.OnDayAnalysis, id=ID_Menu_Day)
         self.mainwindow.Bind(wx.EVT_MENU, self.OnNewRealtimeWindow, id=ID_Menu_Realtime)
         
         
@@ -25,7 +27,7 @@ class Control:
         
         self.data_manager = DataManager() 
         self.data_manager.start()
-        self.symbol = '002094'
+        self.symbol = '000001'
         self.data_manager.UpdateSymbol(self.symbol)
         #self.realtime_data = self.data_manager.GetQuoteData(self.symbol, 60, 1).df
         #self.analysis_data = self.data_manager.GetQuoteData(self.symbol, 1800, 30).df 
@@ -39,7 +41,13 @@ class Control:
         self.realtime_window = None
         self.analysis_window = None
         
-
+    def _InitComponet(self):
+        self.Wnd30Min = wx.MDIChildFrame(self.mainwindow, -1, self.symbol+"30 Min"+self.symbol)
+        self.analysis_panel_30 = AnalysisPanel(self.Wnd30Min)
+        self.analysis_panel_30.Bind(wx.EVT_PAINT, self.OnAnalysisPaint)
+        self.analysis_panel_30.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBack)
+        
+        
     def OnSymbolCtrlEnter(self, evt):
         sym = self.mainwindow.symbol_ctrl.GetValue()
         if sym in self.data_manager.symbol_dict:
@@ -69,7 +77,7 @@ class Control:
         #if self.analysis_window.IsShownOnScreen():           
             self.analysis_data = message.data
             self.analysis_panel.Refresh()  
-    def OnNewAnalysisWindow(self, evt):
+    def On5MinAnalysis(self, evt):
         if self.analysis_window is None:            
             self.analysis_window = wx.MDIChildFrame(self.mainwindow, -1, "Analysis Window:"+self.symbol)
             self.analysis_panel = AnalysisPanel(self.analysis_window)
@@ -78,7 +86,11 @@ class Control:
         else:        
             self.analysis_window.Show(True)
             self.analysis_window.SetFocus()
-       
+    def On30MinAnalysis(self, evt):  
+         pass
+    
+    def OnDayAnalysis(self, evt):
+         pass
     
     def OnNewRealtimeWindow(self, evt):
         if self.realtime_window is None:

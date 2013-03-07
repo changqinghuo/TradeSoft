@@ -60,10 +60,10 @@ class QuoteDataThread(threading.Thread):
                 print str(sys.exc_info())
                 self.done = False
     def _IsMarketOpen(self, dt):
-#        if dt.weekday() == 5 or dt.weekday() == 6:
-#            return False
-#        if dt.time()> datetime.time(15,0,0) or dt.time() < datetime.time(9, 15, 0):        
-#            return False
+        if dt.weekday() == 5 or dt.weekday() == 6:
+            return False
+        if dt.time()> datetime.time(15,0,0) or dt.time() < datetime.time(9, 15, 0):        
+            return False
         return True
     def _RealtimeMode(self):
         now = datetime.datetime.now()          
@@ -165,7 +165,7 @@ class DataManager(threading.Thread):
         realtime_thread = QuoteDataThread(self.symbol, 60, 1)
         realtime_thread.start()
         self.thread_list.append(realtime_thread)
-        analysis_thread = QuoteDataThread(self.symbol, 300, 5)
+        analysis_thread = QuoteDataThread(self.symbol, 3600*24, 240)
         analysis_thread.start();
         self.thread_list.append(analysis_thread)     
         

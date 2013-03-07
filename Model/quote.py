@@ -17,7 +17,7 @@
 # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#Modify by Terry: 2013-2
+#Modify by TerryHUO: 2013-2
 #==1 Modify for ChinaStock market
 
 import urllib2,time,datetime
@@ -221,7 +221,7 @@ if __name__ == '__main__':
   
     while True:
         try:
-            q = GoogleIntradayQuote('600016',300, 10)           
+            q = GoogleIntradayQuote('600016', 3600, 100)           
             q.write_csv(q.symbol+"test.csv")
             time.sleep(1)
             print q.dtstamp[-1], ",", q.open[-1], ",", q.close[-1], ", " ,q.high[-1], ",", q.low[-1], ",", q.volume[-1]/100 
