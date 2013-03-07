@@ -4,6 +4,7 @@ from view.AnalysisPanel import *
 from view.MainWindow import *
 from model.DataManager import *
 from util.draw import *
+from util.czsc import ChanlunCore
 import threading
 
 class Control:
@@ -58,6 +59,8 @@ class Control:
        #dc.DrawBitmap(self.Buffer, 0, 0) 
        dc.Clear()     
        draw_candle(dc, self.analysis_data)
+       czsc = ChanlunCore()
+       czsc.Draw(dc, self.analysis_data)
                 
 
     def OnEraseBack(self, evt):        

@@ -381,7 +381,7 @@ def test():
         def OnPaint(self, event):
             dc = wx.PaintDC(self)           
             draw_candle(dc, df)
-            self.czsc.draw(dc, df, MIN5_DATA)
+            self.czsc.Draw(dc, df)
             
     class TestWindow(wx.Frame):
         def __init__(self, parent, id, title):

@@ -757,6 +757,12 @@ class ChanlunCore:
                     kxl = kx
                     binum = binum + 1
             i = i + 1
+        print "xia bi data"
+        for bi in self.xbData:
+            print bi.no, "    ", bi.nol,"    " , bi.noh
+        print "shang bi data"
+        for bi in self.sbData:
+            print bi.no, "    ", bi.nol, "    ", bi.noh
         #} # END 查找所有特征序列
     def findTZG(self, fromNo):
         if len(self.xbData) == 0:
@@ -1304,7 +1310,34 @@ class ChanlunCore:
                     self.findFanTanZS(i, dit.noh, dit.nol, dit.high, dit.low)
                     
         #} # if dData.size() > 0:
-    def draw(self, dc, df, interval):
+    def _getintervalfromdata(self, df):
+        timeindex = df.index
+        ret = DAY_DATA
+        if len(df) >= 2:            
+            t1 = timeindex[0]
+            t2 = timeindex[1]
+            timedelta = t2 - t1
+            if timedelta.seconds == 60:
+                ret = MIN1_DATA
+            elif timedelta.seconds == 300:
+                ret = MIN5_DATA
+            elif timedelta.seconds == 900:
+                ret = MIN15_DATA
+            elif timedelta.seconds == 1800:
+                ret = MIN30_DATA
+            elif timedelta.seconds == 3600:
+                ret = MIN60_DATA
+            elif timedelta.days == 1:
+                ret = DAY_DATA
+            elif timedelta.days == 7:
+                ret = WEEK_DATA
+            elif timedelta.days> 7 and timedelta.days <= 31:
+                ret = MONTH_DATA
+        return ret
+        
+        
+    def Draw(self, dc, df):
+        interval = self._getintervalfromdata(df)
         calinfo = CALCINFO(df, interval)
         self.initBiQK(calinfo)
         self.initKx(calinfo)
@@ -1364,10 +1397,13 @@ def test():
     czsc.initBiQK(calinfo)
     czsc.initKx(calinfo)
     czsc.initFX()
-    for kx in czsc.kxData:
-        print kx.flag
     czsc.initBi()
+    print "after initBi"
+    for kx in czsc.kxData:
+        if kx.bi == DIR_UP or kx.bi == DIR_DN:
+            print kx.bi,  " ", kx.no
     czsc.initDuan()
+    print "after initDuan"
     czsc.initDuanList()
     print "bi ========================="
     for kx in czsc.kxData:
