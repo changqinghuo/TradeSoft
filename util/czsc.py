@@ -1338,9 +1338,11 @@ class ChanlunCore:
         self.initKx(calinfo)
         self.initFX()
         self.initBi()
+        self.initTZXL()
         self.initDuan()
-        self.initDuanList()
-        self.initZhongshu()
+#        self.initDuan()
+#        self.initDuanList()
+#        self.initZhongshu()
         xmax, ymax = init_dc(dc)
         dc.SetPen(wx.Pen(wx.RED, 1))
         i = 0
