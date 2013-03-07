@@ -757,12 +757,7 @@ class ChanlunCore:
                     kxl = kx
                     binum = binum + 1
             i = i + 1
-        print "xia bi data"
-        for bi in self.xbData:
-            print bi.no, "    ", bi.nol,"    " , bi.noh
-        print "shang bi data"
-        for bi in self.sbData:
-            print bi.no, "    ", bi.nol, "    ", bi.noh
+        
         #} # END 查找所有特征序列
     def findTZG(self, fromNo):
         if len(self.xbData) == 0:
@@ -1351,37 +1346,37 @@ class ChanlunCore:
         i = 0
         num = 0
         line = []
-        for i in range(len(self.kxData)):
-            kx = self.kxData[i]
-            if kx.bi == DIR_UP:
-
-                highx, highy = gethighpointfromdata(dc, df, i)
-                line.append(highx)
-                line.append(highy)
-            elif kx.bi == DIR_DN:
-                num += 1
-                lowx, lowy = getlowpointfromdata(dc, df, i)
-                line.append(lowx)
-                line.append(lowy)
-
-            if len(line) == 4:
-                dc.DrawLine(line[0], line[1], line[2], line[3])
-                tmp = []
-                tmp.append(line[2])
-                tmp.append(line[3])
-                line = tmp
+#        for i in range(len(self.kxData)):
+#            kx = self.kxData[i]
+#            if kx.bi == DIR_UP:
+#
+#                highx, highy = gethighpointfromdata(dc, df, i)
+#                line.append(highx)
+#                line.append(highy)
+#            elif kx.bi == DIR_DN:
+#                num += 1
+#                lowx, lowy = getlowpointfromdata(dc, df, i)
+#                line.append(lowx)
+#                line.append(lowy)
+#
+#            if len(line) == 4:
+#                dc.DrawLine(line[0], line[1], line[2], line[3])
+#                tmp = []
+#                tmp.append(line[2])
+#                tmp.append(line[3])
+#                line = tmp
                 
                 
-#        for i in range(len(self.sbData)):
-#            bi = self.sbData[i]
-#            highx, highy = gethighpointfromdata(dc, df, bi.noh-1)
-#            lowx, lowy = getlowpointfromdata(dc, df, bi.nol-1)
-#            dc.DrawLine(highx, highy, lowx, lowy)
-#        for i in range(len(self.xbData)):
-#            bi = self.xbData[i]
-#            highx, highy = gethighpointfromdata(dc, df, bi.nol-1)
-#            lowx, lowy = getlowpointfromdata(dc, df, bi.noh-1)
-#            dc.DrawLine(highx, highy, lowx, lowy)
+        for i in range(len(self.sbData)):
+            bi = self.sbData[i]
+            highx, highy = gethighpointfromdata(dc, df, bi.noh-1)
+            lowx, lowy = getlowpointfromdata(dc, df, bi.nol-1)
+            dc.DrawLine(highx, highy, lowx, lowy)
+        for i in range(len(self.xbData)):
+            bi = self.xbData[i]
+            highx, highy = gethighpointfromdata(dc, df, bi.noh-1)
+            lowx, lowy = getlowpointfromdata(dc, df, bi.nol-1)
+            dc.DrawLine(highx, highy, lowx, lowy)
             
             
             
