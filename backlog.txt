@@ -1,0 +1,6 @@
+1  add support for select different interval(low)
+2  add support for history data (mid)
+3  add czsc one two three buy and sell (high)
+4  add czsc zhongshu for latest duan(high)
+5  refactor datamanager and its thread (high)
+

@@ -147,5 +147,5 @@ def draw_candle(dc, df):
         dc.DrawRectangle(rec[0], rec[1], rec[2], rec[3])
         dc.DrawLine(upperline[0], upperline[1], upperline[2], upperline[3])
         dc.DrawLine(lowerline[0], lowerline[1], lowerline[2], lowerline[3])
-        dc.DrawText(str(i), upperline[2], upperline[3])
+        #dc.DrawText(str(i), upperline[2], upperline[3])
         i = i+1

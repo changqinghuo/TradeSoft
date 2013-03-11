@@ -2,7 +2,7 @@
 #!/usr/bin/env python
 
 import wx
-from AnalysisPanel import AnalysisPanel
+from CandlePanel import CandlePanel
 from control.control import *
 
 #import ScrolledWindow

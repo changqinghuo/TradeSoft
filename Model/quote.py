@@ -74,6 +74,9 @@ class GoogleIntradayQuote(Quote):
     
     def __init__(self,symbol,interval_seconds=300,num_days=5):              
         super(GoogleIntradayQuote,self).__init__()
+        #google does not support for interval > 30Min
+        if interval_seconds > 1800:
+            return None
         self.symbol = symbol.upper()
         self.interval_seconds = interval_seconds
         dict = {}
@@ -221,7 +224,7 @@ if __name__ == '__main__':
   
     while True:
         try:
-            q = GoogleIntradayQuote('600016', 3600, 100)           
+            q = GoogleIntradayQuote('600016', 3600, 10)           
             q.write_csv(q.symbol+"test.csv")
             time.sleep(1)
             print q.dtstamp[-1], ",", q.open[-1], ",", q.close[-1], ", " ,q.high[-1], ",", q.low[-1], ",", q.volume[-1]/100 

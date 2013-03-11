@@ -32,6 +32,10 @@ class QuoteDataThread(threading.Thread):
             rows = len(realtime_index)
             matrix = np.zeros((rows, 5), dtype=np.float)
             self.realtimedata = pd.DataFrame(matrix, index=realtime_index, columns=['open', 'high', 'low', 'close', 'volume'])
+        elif self.period == 1800:
+            self._message_topic = "MIN30DATA" 
+        elif self.period == 3600*4:
+            self._message_topic = "DAYDATA"
         self.done = False
         
     def run(self):
@@ -162,12 +166,20 @@ class DataManager(threading.Thread):
             t.done = True
         self.symbol = sym
         self.thread_list = []
-        realtime_thread = QuoteDataThread(self.symbol, 60, 1)
+        realtime_thread = QuoteDataThread(self.symbol, 60, 3)
         realtime_thread.start()
         self.thread_list.append(realtime_thread)
-        analysis_thread = QuoteDataThread(self.symbol, 3600*24, 240)
+        analysis_thread = QuoteDataThread(self.symbol, 300, 5)
         analysis_thread.start();
-        self.thread_list.append(analysis_thread)     
+        self.thread_list.append(analysis_thread)  
+        
+        min30_thread = QuoteDataThread(self.symbol, 1800, 40)
+        min30_thread.start()        
+        self.thread_list.append(min30_thread)  
+        
+#        day_thread =  QuoteDataThread(self.symbol, 3600*4, 20)
+#        day_thread.start()        
+#        self.thread_list.append(day_thread)    
         
         
         
