@@ -1194,19 +1194,21 @@ class ChanlunCore:
                 d.no = dend.no + 1
         else:
             kstart = self.kxData[0]
-            if kstart.close < kend.close:
+            if kstart.high < kend.high:
                 d.flag = DIR_DN
+            else:
+                d.flag = DIR_UP
             if d.flag == DIR_DN:
                 d.noh = kstart.no
                 d.high = kstart.high
-                d.nol = kxl.no
-                d.low = kx.low
-                d.no =  1
-            else:
-                d.noh = kx.no
-                d.high =kxl.high
                 d.nol = kend.no
                 d.low = kend.low
+                d.no =  1
+            else:
+                d.noh = kend.no
+                d.high =kend.high
+                d.nol = kstart.no
+                d.low = kstart.low
                 d.no =  1
                 
                 

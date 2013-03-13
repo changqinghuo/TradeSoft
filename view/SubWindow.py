@@ -18,9 +18,43 @@ class MyChildFrame(wx.MDIChildFrame):
         self.__do_layout()
         # end wxGlade
         self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self.main_panel.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+        #self.main_panel.Bind(wx.EVT_CHAR, self.OnChar)
+        
+        #zoom in and zoom out:
+        self._dataleft = 0
+        self._dataright = 240
+        
+    def OnChar(self, evt):
+        keycode = evt.GetKeyCode()
+        if True:#keycode == wx.WXK_UP:
+            self._dataleft = self._dataleft + 10
+            self.main_panel.data = self.data[self._dataleft: self._dataright]
+            self.main_panel.Refresh()
 
+    def OnKeyDown(self, evt):
+        keycode = evt.GetKeyCode()
+        if keycode == wx.WXK_NUMPAD_UP:#keycode == wx.WXK_UP:
+            self._dataleft = self._dataleft + 10
+            self.main_panel.data = self.data[self._dataleft: self._dataright]
+            self.main_panel.Refresh()
+        elif keycode == wx.WXK_NUMPAD_DOWN:
+            if self._dataleft - 10 >=0:
+                self._dataleft = self._dataleft - 10
+            else:
+                return
+            self.main_panel.data = self.data[self._dataleft: self._dataright]
+            self.main_panel.Refresh()
+            
+            
     def SetStockData(self, sym, df, interval):
+        if df is None:
+            return
+        self.data = df
+        self._dataleft = 0
+        self._dataright = min(len(df), self._dataright)
         self.main_panel.data = df
+               
         self.sym = sym
         self.interval = interval
         self.SetTitle(self.interval+":"+self.sym)
