@@ -1104,7 +1104,15 @@ class ChanlunCore:
                     num = tzg.noh - 1
                     kx = self.getCKX(num)
                     kx.duan = DIR_UP
+        
         #} # end kxnum>21
+#        kxend = self.kxData[-1]
+#        
+#        if kx.duan == DIR_UP:
+#            kxend.duan = DIR_DN
+#        else:
+#            kxend.duan = DIR_UP
+
     def initDuanList(self):
         if len(self.dData):
             self.dData = []
@@ -1162,6 +1170,54 @@ class ChanlunCore:
                     kxl = kx
                     
             i = i + 1
+       # add last duan in duanlist
+        kend = self.kxData[-1]
+        d = cduan()
+        d.flag = DIR_UP
+        dend = None
+        if len(self.dData) > 0:            
+            dend = self.dData[-1]
+        if dend:
+            if dend.flag == DIR_DN:
+                d.flag = DIR_UP
+                d.noh = kend.no
+                d.high = kend.high
+                d.nol = kxl.no
+                d.low = kxl.low
+                d.no = dend.no + 1
+            else:
+                d.flag = DIR_UP
+                d.noh = kxl.no
+                d.high =kxl.high
+                d.nol = kend.no
+                d.low = kend.low
+                d.no = dend.no + 1
+        else:
+            kstart = self.kxData[0]
+            if kstart.close < kend.close:
+                d.flag = DIR_DN
+            if d.flag == DIR_DN:
+                d.noh = kstart.no
+                d.high = kstart.high
+                d.nol = kxl.no
+                d.low = kx.low
+                d.no =  1
+            else:
+                d.noh = kx.no
+                d.high =kxl.high
+                d.nol = kend.no
+                d.low = kend.low
+                d.no =  1
+                
+                
+            
+        self.dData.append(d)
+       
+                
+                
+        
+        
+        
         #} # END 查找所有段
     def findHuiTiaoZS(self, duanno, begin, end, high, low):
         if len(self.xbData) >= 2:

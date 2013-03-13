@@ -100,7 +100,9 @@ class GoogleIntradayQuote(Quote):
         dict = {'open':self.open, 'high':self.high, 
             'low':self.low, 'close':self.close, 'volume':self.volume}
         df = pd.DataFrame(dict, index=self.dtstamp)
-        #self.df = df
+        self.df = df
+        if df is None:
+            return
         self.df = self._AdjustData(df)       
 
         #print self.df
@@ -224,7 +226,7 @@ if __name__ == '__main__':
   
     while True:
         try:
-            q = GoogleIntradayQuote('600016', 3600, 10)           
+            q = GoogleIntradayQuote('600016', 1800*2, 10)           
             q.write_csv(q.symbol+"test.csv")
             time.sleep(1)
             print q.dtstamp[-1], ",", q.open[-1], ",", q.close[-1], ", " ,q.high[-1], ",", q.low[-1], ",", q.volume[-1]/100 
