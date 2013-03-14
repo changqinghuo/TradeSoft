@@ -58,6 +58,7 @@ class MyParentFrame(wx.MDIParentFrame):
             )
 
         self.Bind(wx.EVT_SIZE, self.OnSize)
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 
 
         # Create some layout windows
@@ -110,6 +111,8 @@ class MyParentFrame(wx.MDIParentFrame):
         self.leftWindow2 = win
 
 
+    def OnKeyDown(self, evt):
+        print "Main frame pressed"
     def OnSashDrag(self, event):
         if event.GetDragStatus() == wx.SASH_STATUS_OUT_OF_RANGE:
             return

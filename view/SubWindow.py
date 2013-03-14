@@ -19,11 +19,12 @@ class MyChildFrame(wx.MDIChildFrame):
         # end wxGlade
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.main_panel.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
         #self.main_panel.Bind(wx.EVT_CHAR, self.OnChar)
         
         #zoom in and zoom out:
-        self._dataleft = 0
-        self._dataright = 240
+        self._dataleft = -1
+        self._dataright = -1
         
     def OnChar(self, evt):
         keycode = evt.GetKeyCode()
@@ -33,12 +34,14 @@ class MyChildFrame(wx.MDIChildFrame):
             self.main_panel.Refresh()
 
     def OnKeyDown(self, evt):
+        #don't know why wx.wxk_up and wx.wxk_down cannot be captured
         keycode = evt.GetKeyCode()
-        if keycode == wx.WXK_NUMPAD_UP:#keycode == wx.WXK_UP:
+     
+        if keycode == wx.WXK_SPACE:#keycode == wx.WXK_UP:
             self._dataleft = self._dataleft + 10
             self.main_panel.data = self.data[self._dataleft: self._dataright]
             self.main_panel.Refresh()
-        elif keycode == wx.WXK_NUMPAD_DOWN:
+        elif keycode == wx.WXK_ALT:
             if self._dataleft - 10 >=0:
                 self._dataleft = self._dataleft - 10
             else:
@@ -51,9 +54,15 @@ class MyChildFrame(wx.MDIChildFrame):
         if df is None:
             return
         self.data = df
-        self._dataleft = 0
-        self._dataright = min(len(df), self._dataright)
-        self.main_panel.data = df
+        
+        if self._dataleft <0 and self._dataright <0:            
+            self._dataright = len(df)
+            self._dataleft = self._dataright - 240
+            if self._dataleft < 0:
+                self._dataleft = 0
+        
+        
+        self.main_panel.data = df[self._dataleft:self._dataright]
                
         self.sym = sym
         self.interval = interval

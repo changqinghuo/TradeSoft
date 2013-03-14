@@ -1171,49 +1171,49 @@ class ChanlunCore:
                     
             i = i + 1
        # add last duan in duanlist
-        kend = self.kxData[-1]
-        d = cduan()
-        d.flag = DIR_UP
-        dend = None
-        if len(self.dData) > 0:            
-            dend = self.dData[-1]
-        if dend:
-            if dend.flag == DIR_DN:
-                d.flag = DIR_UP
-                d.noh = kend.no
-                d.high = kend.high
-                d.nol = kxl.no
-                d.low = kxl.low
-                d.no = dend.no + 1
-            else:
-                d.flag = DIR_UP
-                d.noh = kxl.no
-                d.high =kxl.high
-                d.nol = kend.no
-                d.low = kend.low
-                d.no = dend.no + 1
-        else:
-            kstart = self.kxData[0]
-            if kstart.high < kend.high:
-                d.flag = DIR_DN
-            else:
-                d.flag = DIR_UP
-            if d.flag == DIR_DN:
-                d.noh = kstart.no
-                d.high = kstart.high
-                d.nol = kend.no
-                d.low = kend.low
-                d.no =  1
-            else:
-                d.noh = kend.no
-                d.high =kend.high
-                d.nol = kstart.no
-                d.low = kstart.low
-                d.no =  1
-                
-                
-            
-        self.dData.append(d)
+#        kend = self.kxData[-1]
+#        d = cduan()
+#        d.flag = DIR_UP
+#        dend = None
+#        if len(self.dData) > 0:            
+#            dend = self.dData[-1]
+#        if dend:
+#            if dend.flag == DIR_DN:
+#                d.flag = DIR_UP
+#                d.noh = kend.no
+#                d.high = kend.high
+#                d.nol = kxl.no
+#                d.low = kxl.low
+#                d.no = dend.no + 1
+#            else:
+#                d.flag = DIR_UP
+#                d.noh = kxl.no
+#                d.high =kxl.high
+#                d.nol = kend.no
+#                d.low = kend.low
+#                d.no = dend.no + 1
+#        else:
+#            kstart = self.kxData[0]
+#            if kstart.high < kend.high:
+#                d.flag = DIR_DN
+#            else:
+#                d.flag = DIR_UP
+#            if d.flag == DIR_DN:
+#                d.noh = kstart.no
+#                d.high = kstart.high
+#                d.nol = kend.no
+#                d.low = kend.low
+#                d.no =  1
+#            else:
+#                d.noh = kend.no
+#                d.high =kend.high
+#                d.nol = kstart.no
+#                d.low = kstart.low
+#                d.no =  1
+#                
+#                
+#            
+#        self.dData.append(d)
        
                 
                 
@@ -1366,6 +1366,30 @@ class ChanlunCore:
                 elif DIR_DN == dit.flag:
                     # 向下段
                     self.findFanTanZS(i, dit.noh, dit.nol, dit.high, dit.low)
+        
+        #last duan's zhongshu
+        lastduan = None
+        if self.dData:            
+            lastduan = self.dData[-1]
+        kxend = self.kxData[-1]
+        direction = DIR_UP
+        if lastduan:
+            if lastduan.flag == DIR_UP:
+                kxstart = lastduan.noh
+                direction = DIR_DN
+            else:
+                kxstart = lastduan.nol
+                direction = DIR_UP
+        else:
+            kxstart = self.kxData[0]
+        
+        
+        
+        
+            
+            
+        
+        
                     
         #} # if dData.size() > 0:
     def _getintervalfromdata(self, df):
