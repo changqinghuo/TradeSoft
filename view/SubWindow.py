@@ -54,12 +54,14 @@ class MyChildFrame(wx.MDIChildFrame):
         if df is None:
             return
         self.data = df
+        self._dataleft = 0
+        self._dataright = len(df)
         
-        if self._dataleft <0 and self._dataright <0:            
-            self._dataright = len(df)
-            self._dataleft = self._dataright - 240
-            if self._dataleft < 0:
-                self._dataleft = 0
+#        if self._dataleft <0 and self._dataright <0:            
+#            self._dataright = len(df)
+#            self._dataleft = self._dataright - 240
+#            if self._dataleft < 0:
+#                self._dataleft = 0
         
         
         self.main_panel.data = df[self._dataleft:self._dataright]

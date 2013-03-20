@@ -1382,6 +1382,13 @@ class ChanlunCore:
                 direction = DIR_UP
         else:
             kxstart = self.kxData[0]
+            if kxstart.high > kxend.high:
+                direction = DIR_DN
+            else:
+                direction = DIR_UP
+        
+        
+        
         
         
         
