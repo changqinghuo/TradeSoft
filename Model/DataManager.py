@@ -110,7 +110,7 @@ class DataManager(threading.Thread):
         self.symbol = "000001"
         self.thread_list = []
         self.realtimequote_dict = {}
-        self.QuoteDataThreads()
+        #self.QuoteDataThreads()
         self.InitializeRealtimeQuote()
         
     def GetLastClose(self, sym):
@@ -169,10 +169,10 @@ class DataManager(threading.Thread):
         realtime_thread = QuoteDataThread(self.symbol, 60, 3)
         realtime_thread.start()
         self.thread_list.append(realtime_thread)
-        analysis_thread = QuoteDataThread(self.symbol, 300, 5)
+        analysis_thread = QuoteDataThread(self.symbol, 300, 6)
         analysis_thread.start();
         self.thread_list.append(analysis_thread)  
-        
+#        
         min30_thread = QuoteDataThread(self.symbol, 1800, 40)
         min30_thread.start()        
         self.thread_list.append(min30_thread)  
@@ -188,13 +188,14 @@ class DataManager(threading.Thread):
        
         done = True
        # while True:
+        self.UpdateSymbol(self.symbol)
 
-        realtime_thread = QuoteDataThread(self.symbol, 60, 1)
-        realtime_thread.start()
-        self.thread_list.append(realtime_thread)
-        analysis_thread = QuoteDataThread(self.symbol, 300, 10)
-        analysis_thread.start();
-        self.thread_list.append(analysis_thread)
+#        realtime_thread = QuoteDataThread(self.symbol, 60, 1)
+#        realtime_thread.start()
+#        self.thread_list.append(realtime_thread)
+#        analysis_thread = QuoteDataThread(self.symbol, 300, 10)
+#        analysis_thread.start();
+#        self.thread_list.append(analysis_thread)
 #        for d in self.symbol_quote_dict.keys(): 
 #            t = QuoteDataThread(d, 60, 1)
 #            t.start()            
@@ -216,8 +217,9 @@ class DataManager(threading.Thread):
 #                    print t.lastupdate_time
                        
         
-    def run(self):
-        self.QuoteDataThreads()
+    #def run(self):
+        
+        #self.QuoteDataThreads()
 
 
 if __name__ == '__main__':

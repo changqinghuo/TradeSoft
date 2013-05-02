@@ -1214,8 +1214,8 @@ class ChanlunCore:
 #                
 #            
 #        self.dData.append(d)
-       
-                
+#       
+#                
                 
         
         
@@ -1368,24 +1368,27 @@ class ChanlunCore:
                     self.findFanTanZS(i, dit.noh, dit.nol, dit.high, dit.low)
         
         #last duan's zhongshu
-        lastduan = None
-        if self.dData:            
-            lastduan = self.dData[-1]
-        kxend = self.kxData[-1]
-        direction = DIR_UP
-        if lastduan:
-            if lastduan.flag == DIR_UP:
-                kxstart = lastduan.noh
-                direction = DIR_DN
-            else:
-                kxstart = lastduan.nol
-                direction = DIR_UP
-        else:
-            kxstart = self.kxData[0]
-            if kxstart.high > kxend.high:
-                direction = DIR_DN
-            else:
-                direction = DIR_UP
+#        lastduan = None
+#        if self.dData:            
+#            lastduan = self.dData[-1]
+#        kxend = self.kxData[-1]
+#        direction = DIR_UP
+#        if lastduan:
+#            if lastduan.flag == DIR_UP:
+#                kxstart = lastduan.noh
+#                direction = DIR_DN
+#            else:
+#                kxstart = lastduan.nol
+#                direction = DIR_UP
+#        else:
+#            kxstart = self.sbData[0]
+#            if kxstart.high > kxend.high:
+#                direction = DIR_DN
+#            else:
+#                direction = DIR_UP
+        
+        #if direction == DIR_UP:
+            
         
         
         

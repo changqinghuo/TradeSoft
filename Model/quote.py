@@ -52,8 +52,6 @@ class Quote(object):
     
   def write_csv(self,filename):
       self.df.to_csv(filename)
-#    with open(filename,'w') as f:
-#      f.write(self.to_csv())
         
   def read_csv(self,filename):
     self.symbol = ''
@@ -103,15 +101,16 @@ class GoogleIntradayQuote(Quote):
         self.df = df
         if df is None:
             return
+        #df = pd.DataFrame.from_csv('600016test.csv')
+        #print df.index[0].__class__
         self.df = self._AdjustData(df)       
 
-        #print self.df
- 
    
     def _CreateIndex(self):
         d1 = self.dtstamp[0].date()
+        #d1 = df.index[0].date()
         days = [d1]
-        for t in self.dtstamp:
+        for t in self.dtstamp:#df.index:#
             if t.date() != d1:
                 days.append(t)
                 d1 = t.date()               
@@ -143,29 +142,28 @@ class GoogleIntradayQuote(Quote):
                          or t.time() > datetime.time(15, 00,0)]
   
         a = df.ix[timeselected]    
-        for t in a.index:        
+        for t in a.index: 
             if t.time()  < datetime.time(9, 31,0):
                 timetomodify = datetime.datetime(t.year, t.month, t.day, 9,30,0) + datetime.timedelta(seconds=self.interval_seconds)
-                #timetomodify = datetime.datetime(t.year, t.month, t.day, timefirst.hour,timefirst.minute,timefirst.second) 
-                self.df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
+                self.df = self.df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
                 if np.isnan(self.df.get_value(timetomodify, 'close')):
                     self.df.set_value(timetomodify, 'close', df.get_value(t, 'close'))                   
                 
             elif t.time() > datetime.time(11, 30, 0) and t.time()<datetime.time(12,0,0):            
                 timetomodify = datetime.datetime(t.year, t.month, t.day, 11, 30, 0)           
-                self.df.set_value(timetomodify, 'close', df.get_value(t,'close'))
+                self.df = self.df.set_value(timetomodify, 'close', df.get_value(t,'close'))
                 if np.isnan(self.df.get_value(timetomodify, 'open')):
                     self.df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
             elif t.time() >  datetime.time(15, 00,0):
                 timetomodify = datetime.datetime(t.year, t.month, t.day, 15, 0, 0)       
-                self.df.set_value(timetomodify, 'close', df.get_value(t,'close'))
+                self.df = self.df.set_value(timetomodify, 'close', df.get_value(t,'close'))
                 if np.isnan(self.df.get_value(timetomodify, 'open')):
                     self.df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
             elif t.time() <= datetime.time(13,00,00) and t.time() >datetime.time(12, 30,0):
                 timetomodify = datetime.datetime(t.year, t.month, t.day, 13, 0, 0)+ datetime.timedelta(seconds=self.interval_seconds)
-                self.df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
+                self.df = self.df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
                 if np.isnan(self.df.get_value(timetomodify, 'close')):
-                    self.df.set_value(timetomodify, 'close', df.get_value(t, 'close'))
+                    self.df.set_value(timetomodify, 'close', df.get_value(t, 'close'))         
                 
             if not np.isnan(self.df.get_value(timetomodify, 'volume')):                            
                 self.df.set_value(timetomodify, 'volume', df.get_value(t, 'volume')+self.df.get_value(timetomodify, 'volume'))
@@ -182,7 +180,6 @@ class GoogleIntradayQuote(Quote):
             else:
                 self.df.set_value(timetomodify, 'low', df.get_value(t, 'low'))
         
-        #self.df['volume'].fillna(0, inplace=True)
         self.df['volume'].fillna(0, inplace=True)
         self.df.fillna(method='ffill', inplace=True)
         self.df.fillna(method = 'bfill', inplace=True)
@@ -226,13 +223,12 @@ if __name__ == '__main__':
   
     while True:
         try:
-            q = GoogleIntradayQuote('600016', 1800*2, 10)           
-            q.write_csv(q.symbol+"test.csv")
+            q = GoogleIntradayQuote('600016', 1800, 10) 
+     
+            #q.write_csv(q.symbol+"test.csv")
             time.sleep(1)
             print q.dtstamp[-1], ",", q.open[-1], ",", q.close[-1], ", " ,q.high[-1], ",", q.low[-1], ",", q.volume[-1]/100 
         except :
             print str(sys.exc_info())
 
-  #q.write_csv("test.csv")
-  #q.read_csv("test.csv")
-  #print q.df['close']                                    # print it out
+

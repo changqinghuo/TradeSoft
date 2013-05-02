@@ -36,7 +36,7 @@ class Control:
         self.data_manager.UpdateSymbol(self.symbol)
         #self.realtime_data = self.data_manager.GetQuoteData(self.symbol, 60, 1).df
         #self.analysis_data = self.data_manager.GetQuoteData(self.symbol, 1800, 30).df 
-        self._lastclose = self.data_manager.GetLastClose(self.symbol)
+        #self._lastclose = self.data_manager.GetLastClose(self.symbol)
         self.realtime_data = None
         self.analysis_data = None
         #for d in self.data_manager.symbol_quote_dict.keys():            
