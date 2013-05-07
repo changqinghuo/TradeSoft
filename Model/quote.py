@@ -24,6 +24,7 @@ import urllib2,time,datetime
 import pandas as pd
 import sys
 import numpy as np
+import StringIO
 
 
 class Quote(object):
@@ -31,11 +32,20 @@ class Quote(object):
   DATE_FMT = '%Y-%m-%d'
   TIME_FMT = '%H:%M:%S'
   
+  #dataframe field
+  COL_DATE = 'Date'
+  COL_OPEN = 'Open'
+  COL_CLOSE = 'Close'
+  COL_HIGH = 'High'
+  COL_LOW = 'Low'
+  COL_VOLUME = 'Volume'
+  COL_ADJCLOSE = 'Adj Close'
   def __init__(self):
     self.symbol = ''
     self.dtstamp ,self.open,self.high,self.low,self.close,self.volume = ([] for _ in range(6))
     self.df = None
   def append(self,dt,open,high,low,close,volume):
+     
     self.dtstamp.append(dt)
     self.open.append(float(open))
     self.high.append(float(high))
@@ -45,22 +55,27 @@ class Quote(object):
       
   def to_csv(self):
       #return self.df.to_csv(path_or_buf, sep, na_rep, float_format, cols, header, index, index_label, mode, nanRep, encoding, quoting, line_terminator)
-    return ''.join(["{0},{1},{2:.2f},{3:.2f},{4:.2f},{5:.2f},{6}\n".format(self.symbol,
-              self.dtstamp[bar].strftime(self.DATE_FMT+' '+self.TIME_FMT),
-              self.open[bar],self.high[bar],self.low[bar],self.close[bar],self.volume[bar]) 
-              for bar in xrange(len(self.close))])
+      output = StringIO.StringIO()
+      self.df.to_csv(output, float_format='%.2f')
+      return output.getvalue()
+#    return ''.join(["{0},{1},{2:.2f},{3:.2f},{4:.2f},{5:.2f},{6}\n".format(self.symbol,
+#              self.dtstamp[bar].strftime(self.DATE_FMT+' '+self.TIME_FMT),
+#              self.open[bar],self.high[bar],self.low[bar],self.close[bar],self.volume[bar]) 
+#              for bar in xrange(len(self.close))])
     
   def write_csv(self,filename):
-      self.df.to_csv(filename)
+      self.df.to_csv(filename, float_format='%.2f')
         
   def read_csv(self,filename):
-    self.symbol = ''
-    self.date,self.time,self.open,self.high,self.low,self.close,self.volume = ([] for _ in range(7))
-    for line in open(filename,'r'):
-      symbol,dt,open_,high,low,close,volume = line.rstrip().split(',')
-      self.symbol = symbol
-      dt = datetime.datetime.strptime(dt,self.DATE_FMT+' '+self.TIME_FMT)
-      self.append(dt,open_,high,low,close,volume)
+#    self.symbol = ''
+#    self.date,self.time,self.open,self.high,self.low,self.close,self.volume = ([] for _ in range(7))
+#    for line in open(filename,'r'):
+#      symbol,dt,open_,high,low,close,volume = line.rstrip().split(',')
+#      self.symbol = symbol
+#      dt = datetime.datetime.strptime(dt,self.DATE_FMT+' '+self.TIME_FMT)
+#      self.append(dt,open_,high,low,close,volume)
+    self.symbol = filename
+    self.df = pd.read_csv(filename, index_col=0)
     return True
 
   def __repr__(self):
@@ -97,20 +112,18 @@ class GoogleIntradayQuote(Quote):
       
         dict = {'open':self.open, 'high':self.high, 
             'low':self.low, 'close':self.close, 'volume':self.volume}
-        df = pd.DataFrame(dict, index=self.dtstamp)
+        df = pd.DataFrame(dict, index=pd.Index(self.dtstamp, name=Quote.COL_DATE))
+        
         self.df = df
         if df is None:
             return
-        #df = pd.DataFrame.from_csv('600016test.csv')
-        #print df.index[0].__class__
         self.df = self._AdjustData(df)       
 
    
-    def _CreateIndex(self):
-        d1 = self.dtstamp[0].date()
-        #d1 = df.index[0].date()
+    def _CreateIndex(self, df):
+        d1 = df.index[0].date()
         days = [d1]
-        for t in self.dtstamp:#df.index:#
+        for t in df.index:#self.dtstamp:#df.index:#
             if t.date() != d1:
                 days.append(t)
                 d1 = t.date()               
@@ -125,7 +138,7 @@ class GoogleIntradayQuote(Quote):
             afternoon_end = datetime.datetime(day.year, day.month, day.day, 15, 00, 0)
             rng_afternoon = pd.date_range(start=afternoon, end=afternoon_end, freq=str(self.interval_seconds)+'s')
             ts = ts.append(rng_afternoon[1:])
-        lastupdate = self.dtstamp[-1]
+        lastupdate = df.index[-1]#self.dtstamp[-1]
         ts = [t for t in ts if t <= lastupdate ]
         print self.interval_seconds, "s:", ts[-1]
         return ts
@@ -133,8 +146,8 @@ class GoogleIntradayQuote(Quote):
         
             
     def _AdjustData(self, df):
-        new_index = self._CreateIndex()
-        self.df = df.reindex(new_index)
+        new_index = pd.Index(self._CreateIndex(df), name=Quote.COL_DATE)
+        df = df.reindex(new_index)
                      
         timeselected = [t for t in df.index if t.time() < datetime.time(9, 31,0) or \
                         (t.time() > datetime.time(11, 30, 0) and t.time()<datetime.time(12,0,0))\
@@ -145,46 +158,46 @@ class GoogleIntradayQuote(Quote):
         for t in a.index: 
             if t.time()  < datetime.time(9, 31,0):
                 timetomodify = datetime.datetime(t.year, t.month, t.day, 9,30,0) + datetime.timedelta(seconds=self.interval_seconds)
-                self.df = self.df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
-                if np.isnan(self.df.get_value(timetomodify, 'close')):
-                    self.df.set_value(timetomodify, 'close', df.get_value(t, 'close'))                   
+                df = df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
+                if np.isnan(df.get_value(timetomodify, 'close')):
+                    df.set_value(timetomodify, 'close', df.get_value(t, 'close'))                   
                 
             elif t.time() > datetime.time(11, 30, 0) and t.time()<datetime.time(12,0,0):            
                 timetomodify = datetime.datetime(t.year, t.month, t.day, 11, 30, 0)           
-                self.df = self.df.set_value(timetomodify, 'close', df.get_value(t,'close'))
-                if np.isnan(self.df.get_value(timetomodify, 'open')):
-                    self.df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
+                df = df.set_value(timetomodify, 'close', df.get_value(t,'close'))
+                if np.isnan(df.get_value(timetomodify, 'open')):
+                    df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
             elif t.time() >  datetime.time(15, 00,0):
                 timetomodify = datetime.datetime(t.year, t.month, t.day, 15, 0, 0)       
-                self.df = self.df.set_value(timetomodify, 'close', df.get_value(t,'close'))
-                if np.isnan(self.df.get_value(timetomodify, 'open')):
-                    self.df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
+                df = df.set_value(timetomodify, 'close', df.get_value(t,'close'))
+                if np.isnan(df.get_value(timetomodify, 'open')):
+                    df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
             elif t.time() <= datetime.time(13,00,00) and t.time() >datetime.time(12, 30,0):
                 timetomodify = datetime.datetime(t.year, t.month, t.day, 13, 0, 0)+ datetime.timedelta(seconds=self.interval_seconds)
-                self.df = self.df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
-                if np.isnan(self.df.get_value(timetomodify, 'close')):
-                    self.df.set_value(timetomodify, 'close', df.get_value(t, 'close'))         
+                df = df.set_value(timetomodify, 'open', df.get_value(t, 'open'))
+                if np.isnan(df.get_value(timetomodify, 'close')):
+                    df.set_value(timetomodify, 'close', df.get_value(t, 'close'))         
                 
-            if not np.isnan(self.df.get_value(timetomodify, 'volume')):                            
-                self.df.set_value(timetomodify, 'volume', df.get_value(t, 'volume')+self.df.get_value(timetomodify, 'volume'))
+            if not np.isnan(df.get_value(timetomodify, 'volume')):                            
+                df.set_value(timetomodify, 'volume', df.get_value(t, 'volume')+df.get_value(timetomodify, 'volume'))
             else:
-                self.df.set_value(timetomodify, 'volume', df.get_value(t, 'volume'))
+                df.set_value(timetomodify, 'volume', df.get_value(t, 'volume'))
                 
-            if not np.isnan(self.df.get_value(timetomodify, 'high')):
-                self.df.set_value(timetomodify, 'high', max(df.get_value(t, 'high'), self.df.get_value(timetomodify, 'high')))
+            if not np.isnan(df.get_value(timetomodify, 'high')):
+                df.set_value(timetomodify, 'high', max(df.get_value(t, 'high'), df.get_value(timetomodify, 'high')))
             else:
-                self.df.set_value(timetomodify, 'high', df.get_value(t, 'high'))
+                df.set_value(timetomodify, 'high', df.get_value(t, 'high'))
                 
-            if not np.isnan(self.df.get_value(timetomodify, 'low')):                
-                self.df.set_value(timetomodify, 'low', min(df.get_value(t, 'low'), self.df.get_value(timetomodify, 'low')))
+            if not np.isnan(df.get_value(timetomodify, 'low')):                
+                df.set_value(timetomodify, 'low', min(df.get_value(t, 'low'), df.get_value(timetomodify, 'low')))
             else:
-                self.df.set_value(timetomodify, 'low', df.get_value(t, 'low'))
+                df.set_value(timetomodify, 'low', df.get_value(t, 'low'))
         
-        self.df['volume'].fillna(0, inplace=True)
-        self.df.fillna(method='ffill', inplace=True)
-        self.df.fillna(method = 'bfill', inplace=True)
+        df['volume'].fillna(0, inplace=True)
+        df.fillna(method='ffill', inplace=True)
+        df.fillna(method = 'bfill', inplace=True)
         
-        return self.df
+        return df
 
             
 
@@ -224,10 +237,14 @@ if __name__ == '__main__':
     while True:
         try:
             q = GoogleIntradayQuote('600016', 1800, 10) 
+            print q.to_csv()
      
-            #q.write_csv(q.symbol+"test.csv")
+            #q.write_csv(q.symbol)
+            q = Quote()
+            q.read_csv('000019.SZ.csv')
+            print q.df.head()
             time.sleep(1)
-            print q.dtstamp[-1], ",", q.open[-1], ",", q.close[-1], ", " ,q.high[-1], ",", q.low[-1], ",", q.volume[-1]/100 
+            print q.df.index[-1], ",", q.df['open'][-1], ",", q.df['close'][-1]#, ", " ,q.high[-1], ",", q.low[-1], ",", q.volume[-1]/100 
         except :
             print str(sys.exc_info())
 

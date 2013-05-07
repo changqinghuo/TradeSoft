@@ -49,13 +49,14 @@ class QuoteDataThread(threading.Thread):
                 
                 if self._IsMarketOpen(now):#now > old: 
                     self._RealtimeMode() 
-                    time.sleep(10)                   
+                    #time.sleep(1)                   
  
                 else:
                     q = GoogleIntradayQuote(self.symbol,self.period, self.num_day)
                     self.quotedata = q
                     pub.sendMessage(self._message_topic, self.quotedata.df) 
-                    self.done = True    
+                    self.done = True 
+                time.sleep(1)   
                         
                          
      
@@ -66,18 +67,27 @@ class QuoteDataThread(threading.Thread):
     def _IsMarketOpen(self, dt):
         if dt.weekday() == 5 or dt.weekday() == 6:
             return False
-        if dt.time()> datetime.time(15,0,0) or dt.time() < datetime.time(9, 15, 0):        
+        if dt.time()> datetime.time(15,0,0) or dt.time() < datetime.time(9, 15, 0) or\
+        (dt.time() > datetime.time(11, 35, 0) and dt.time() < datetime.time(12, 59, 0)):        
             return False
         return True
     def _RealtimeMode(self):
-        now = datetime.datetime.now()          
-        now =  datetime.datetime(now.year, now.month, now.day, now.hour, now.minute) 
-        if now > self.lastupdate:                 
+        now = datetime.datetime.now() 
+        oldtime = self.lastupdate + datetime.timedelta(seconds=self.period)
+        if self.lastupdate.time() == datetime.time(11, 30, 0):
+            oldtime = datetime.datetime(self.lastupdate.date().year, self.lastupdate.date().month,  self.lastupdate.date().day, 13, 0, 0)\
+            + datetime.timedelta(seconds=self.period)
+                                       
+        
+                  
+        #now =  datetime.datetime(now.year, now.month, now.day, now.hour, now.minute) 
+        if now > oldtime :
+            print now, ",",  oldtime                
             q = GoogleIntradayQuote(self.symbol,self.period, self.num_day)
-            if self.lastupdate == q.dtstamp[-1]:
+            if self.lastupdate == q.df.index[-1]:
                 return
             if True:#q.dtstamp[-1] == now:
-                self.lastupdate = q.dtstamp[-1]
+                self.lastupdate = q.df.index[-1]
                 if self.period == 60:
                     self.realtimedata = q.df
                     pub.sendMessage(self._message_topic, self.realtimedata) 
