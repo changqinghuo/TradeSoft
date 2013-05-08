@@ -25,6 +25,7 @@ import pandas as pd
 import sys
 import numpy as np
 import StringIO
+from pandas.io.data import DataReader
 
 
 class Quote(object):
@@ -233,7 +234,9 @@ if __name__ == '__main__':
 #    print dfmorning.reindex(['a', 'b', 'd'])
 #    print dfmorning
     
-  
+    sp500 = DataReader("600016.ss", "yahoo", start=datetime.datetime(2013, 1, 1))
+    #sp500.info()
+    print sp500.ix[sp500['Volume'] != 0]
     while True:
         try:
             q = GoogleIntradayQuote('600016', 1800, 10) 
