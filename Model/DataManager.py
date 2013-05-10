@@ -74,13 +74,17 @@ class QuoteDataThread(threading.Thread):
     def _RealtimeMode(self):
         now = datetime.datetime.now() 
         oldtime = self.lastupdate + datetime.timedelta(seconds=self.period)
-        if self.lastupdate.time() == datetime.time(11, 30, 0):
-            oldtime = datetime.datetime(self.lastupdate.date().year, self.lastupdate.date().month,  self.lastupdate.date().day, 13, 0, 0)\
-            + datetime.timedelta(seconds=self.period)
+        if self.lastupdate.date().year != 2000:            
+            if oldtime.date() != now.date():
+                oldtime = datetime.datetime(now.date().year, now.date().month, now.date().day, 9, 30, 0) + datetime.timedelta(seconds=self.period)
+            if self.lastupdate.time() == datetime.time(11, 30, 0):
+                oldtime = datetime.datetime(self.lastupdate.date().year, self.lastupdate.date().month,  self.lastupdate.date().day, 13, 0, 0)\
+                + datetime.timedelta(seconds=self.period)
                                        
         
                   
         #now =  datetime.datetime(now.year, now.month, now.day, now.hour, now.minute) 
+        
         if now > oldtime :
             print now, ",",  oldtime                
             q = GoogleIntradayQuote(self.symbol,self.period, self.num_day)
